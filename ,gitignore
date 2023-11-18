@@ -1,0 +1,9 @@
+.idea
+
+crypto_VDF.egg-info
+.coverage
+
+.python_version
+
+.pytest_cache
+**/__pycache__/
