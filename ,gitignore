@@ -1,4 +1,4 @@
-.idea
+.idea/**
 
 crypto_VDF.egg-info
 .coverage
