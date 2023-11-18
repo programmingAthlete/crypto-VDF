@@ -1,4 +1,4 @@
-PROJECT_NAME = crypto-VDF
+PROJECT_NAME = crypto_VDF
 
 PYTHON = python
 
