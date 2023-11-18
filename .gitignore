@@ -3,7 +3,7 @@
 crypto_VDF.egg-info
 .coverage
 
-.python_version
+.python-version
 
 .pytest_cache
 **/__pycache__/
