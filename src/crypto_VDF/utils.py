@@ -7,7 +7,7 @@ def exp_modular(a: int, exponent: int, n: int) -> int:
     :param n: modulus
     :return: a^exponent (mod n)
     """
-    exp = int_2_base(exponent, 2)
+    exp = [int(item) for item in bin(exponent)[2:]]
     c = a
     for i in range(1, len(exp)):
         c = c * c % n
