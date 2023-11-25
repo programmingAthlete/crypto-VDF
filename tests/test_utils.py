@@ -3,9 +3,9 @@ import unittest
 from crypto_VDF.utils import exp_modular
 
 
-class TestDummyFunc(unittest.TestCase):
+class TestUtils(unittest.TestCase):
 
-    def test_dummy_func(self):
+    def test_exp_modular(self):
         res = exp_modular(2, 2, 10)
         self.assertEqual(res, 4)
 
