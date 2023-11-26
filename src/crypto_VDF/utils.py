@@ -2,10 +2,13 @@ def exp_modular(a: int, exponent: int, n: int) -> int:
     """
     Modular exponentiation
 
-    :param a: number to exponentiate
-    :param exponent: exponent
-    :param n: modulus
-    :return: a^exponent (mod n)
+    Args:
+        a: number to exponentiate
+        exponent: exponent
+        n: modulus
+
+    Returns:
+        a^exponent (mod n)
     """
     exp = [int(item) for item in bin(exponent)[2:]]
     c = a
@@ -20,9 +23,11 @@ def int_2_base(a: int, base: int) -> list:
     """
     Convert integer to base "base"
 
-    :param a: integer to convert to big number form in base "base"
-    :param base: base into which to convert integer "a"
-    :return: bin number form in base "base" corresponding to "a"
+    Args:
+        a: integer to convert to big number form in base "base"
+        base:  base into which to convert integer "a"
+    Returns:
+        bin number form in base "base" corresponding to "a"
     """
     x = a
     reminders = []
