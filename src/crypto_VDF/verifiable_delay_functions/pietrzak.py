@@ -9,7 +9,7 @@ class PietrzakVDF(VDF):
 
     @classmethod
     def eval(cls, public_params):
-        return VDF.eval_function(public_params=public_params)
+        return cls.eval_function(public_params=public_params)
 
     @classmethod
     def verify(cls, public_params, input_param, output_param, proof=None):
