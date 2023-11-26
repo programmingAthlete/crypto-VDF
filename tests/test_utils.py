@@ -1,6 +1,6 @@
 import unittest
 
-from crypto_VDF.utils import exp_modular, square_sequences
+from crypto_VDF.utils.utils import exp_modular, square_sequences
 
 
 class TestUtils(unittest.TestCase):
