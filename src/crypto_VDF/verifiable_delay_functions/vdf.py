@@ -1,17 +1,20 @@
 from abc import ABC, abstractmethod
 
+from crypto_VDF.dto import PublicParams
+from crypto_VDF.utils.utils import square_sequences
+
 
 class VDF(ABC):
 
     @classmethod
     @abstractmethod
-    def setup(cls, security_param: int, sequential_param: int):
+    def setup(cls, security_param: int, delay: int) -> PublicParams:
         """
         Verifiable delay function setup function.
 
         Args:
             security_param: security parameter lambda
-            sequential_param: sequential parameter t
+            delay: sequential parameter t
         Returns:
             public parameters pp
         """
@@ -19,12 +22,13 @@ class VDF(ABC):
 
     @classmethod
     @abstractmethod
-    def eval(cls, public_params) -> int:
+    def eval(cls, public_params, input_param: int) -> int:
         """
         Compute the output of the VDF
 
         Args:
             public_params: public parameters pp
+            input_param: input
         Returns:
             Output of the VDF
         """
@@ -47,6 +51,5 @@ class VDF(ABC):
         pass
 
     @classmethod
-    def eval_function(cls, public_params):
-        # The same for both VFSs
-        return 1
+    def eval_function(cls, public_params, input_param):
+        return square_sequences(steps=public_params.delay, a=input_param, n=public_params.modulus)

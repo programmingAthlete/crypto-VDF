@@ -1,3 +1,21 @@
+def square_sequences(a: int, steps: int, n: int) -> int:
+    """
+    Modular exponentiation
+
+    Args:
+        a: number to exponentiate
+        steps: exponent
+        n: modulus
+
+    Returns:
+        a^exponent (mod n)
+    """
+    c = abs((a * a) % n)
+    for _ in range(steps):
+        c *= abs((a * a) % n)
+    return c
+
+
 def exp_modular(a: int, exponent: int, n: int) -> int:
     """
     Modular exponentiation
@@ -37,3 +55,17 @@ def int_2_base(a: int, base: int) -> list:
         x = q
         reminders.append(r)
     return reminders[::-1]
+
+
+def base_to_10(numb: [int], base: int) -> int:
+    """
+    Convert number from base "base" to base 10 integer
+
+    :param numb: number in big number form in base "base" in [a_k,a_{k-1},..a_1,a_0] form
+    :param base: base in which "numb" is written
+    :return: integer corresponding to the base 10 of "numb"
+    """
+    base_10 = 0
+    for i in range(len(numb)):
+        base_10 += numb[::-1][i] * base ** i
+    return base_10

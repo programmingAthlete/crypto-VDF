@@ -1,6 +1,6 @@
 import unittest
 
-from crypto_VDF.utils import exp_modular
+from crypto_VDF.utils import exp_modular, square_sequences
 
 
 class TestUtils(unittest.TestCase):
@@ -14,3 +14,9 @@ class TestUtils(unittest.TestCase):
 
         res = exp_modular(10, 126, 29)
         self.assertEqual(res, 28)
+
+    def test_squaring_sequence(self):
+        res = square_sequences(2, 4, 3)
+        self.assertEqual(res, 1)
+
+
