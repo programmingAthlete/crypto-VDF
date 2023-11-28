@@ -19,6 +19,6 @@ To run the Eval function of Pietraz, run
 
 ### Without CLI
 
-<code>python src/verifiable_delay_functions/pietraz.py</code>
+<code>python src/crypto_VDF/verifiable_delay_functions/pietrzak.py</code>
 ## Get help
 <code>cryptoVDF --help</code>
