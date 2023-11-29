@@ -1,5 +1,7 @@
 import random
 
+from crypto_VDF.custom_errors.custom_exceptions import QuadraticResidueFailed
+
 
 class NumberTheory:
 
@@ -26,10 +28,10 @@ class NumberTheory:
     @classmethod
     def generate_quadratic_residue(cls, modulus: int, max_iters=1000000000):
         i = 0
-        while True:
+        while i < max_iters:
             x = random.randint(0, modulus - 1)
             if cls.check_quadratic_residue(x, modulus):
-                break
+                return x
             i += 1
-        if not i == max_iters:
-            return x
+        raise QuadraticResidueFailed(
+            f"Failed to create a quadratic residue of modulus {modulus} in {max_iters} iterations")

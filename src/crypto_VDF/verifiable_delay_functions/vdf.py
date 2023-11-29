@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from crypto_VDF.dto import PublicParams
+from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.utils import square_sequences
 
 

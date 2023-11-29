@@ -1,6 +1,7 @@
 from random import randint
 
-from crypto_VDF.dto import KBitPrimeResponse
+from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
+from crypto_VDF.data_transfer_objects.dto import KBitPrimeResponse
 from crypto_VDF.utils.utils import exp_modular, base_to_10
 
 
@@ -53,6 +54,6 @@ class PrimNumbers:
             base_10_n = base_to_10(k_bit_n, 2)
             response = cls.fermat_test(n=base_10_n, t=t)
             if response:
-                return KBitPrimeResponse(status=True, base_10=base_10_n, base_2=k_bit_n)
+                return KBitPrimeResponse(base_10=base_10_n, base_2=k_bit_n)
             i += 1
-        return KBitPrimeResponse(status=False, base_10=None, base_2=[])
+        return PrimeNumberNotFound
