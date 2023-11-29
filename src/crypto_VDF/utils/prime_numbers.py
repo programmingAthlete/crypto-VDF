@@ -1,4 +1,5 @@
 from random import randint
+from typing import Generator
 
 from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import KBitPrimeResponse
@@ -8,7 +9,7 @@ from crypto_VDF.utils.utils import exp_modular, base_to_10
 class PrimNumbers:
 
     @staticmethod
-    def k_bit_numer(k: int):
+    def k_bit_numer(k: int) -> Generator[int, None, None]:
         """
         Generate an iterator object of k bits with the first bit being 1 (starting with the first bit being 0 is like
          having a k-1 bit number) and other k-1 random bits.

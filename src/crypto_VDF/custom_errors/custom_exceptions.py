@@ -27,6 +27,10 @@ class QuadraticResidueFailed(BaseCaseException):
         super().__init__(name=name, message=message)
 
 
+class NotAQuadraticResidueException(BaseCaseException):
+    def __init__(self, name="NotAQuadraticResidue", message="The value is not a quadratic residue"):
+        super().__init__(name=name, message=message)
+
+
 class ValuesDivergenceException(pydantic.PydanticValueError):
     msg_template = "value {base_10} is not equal to the binary of {base_2} instead of {bin_base_10}"
-
