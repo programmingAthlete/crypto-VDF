@@ -1,7 +1,7 @@
 from typing import List
 
 import pydantic
-from pydantic import root_validator, validator
+from pydantic import root_validator
 
 from crypto_VDF.custom_errors.custom_exceptions import ValuesDivergenceException
 
