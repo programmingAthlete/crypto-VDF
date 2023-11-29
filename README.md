@@ -64,3 +64,16 @@ Without CLI, the source code can be run in a classic manner
 To run the unit tests, run 
 
 <code>make tests</code>
+
+## Rules
+<ul>
+<li>
+Merging to the master branch should be done only by PR unless proper justification or it the changes to not impact critical structure (for example CLI changes which have nothing to do with the crypto part)
+</li>
+<li>
+When merging to master the feature branch should be up-to-date - best thing to do would be to rebase the feature branch into master: <b>in the feature branch</b> do
+<code>git rebase develop</code>, then <code>git push -f</code>
+</li>
+<li>A feature branch should be merged only if its unit tests pass</li>
+<li>The merge to master branch should be done from the GutHub UI using the <b>squash and merge</b> option if the branch contains more than one commit</li>
+</ul>
