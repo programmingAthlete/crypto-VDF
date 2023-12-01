@@ -1,6 +1,6 @@
 import unittest
 
-from crypto_VDF.dto import PublicParams
+from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 
 

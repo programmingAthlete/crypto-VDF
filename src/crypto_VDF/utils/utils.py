@@ -61,9 +61,12 @@ def base_to_10(numb: [int], base: int) -> int:
     """
     Convert number from base "base" to base 10 integer
 
-    :param numb: number in big number form in base "base" in [a_k,a_{k-1},..a_1,a_0] form
-    :param base: base in which "numb" is written
-    :return: integer corresponding to the base 10 of "numb"
+    Args:
+        numb: number in big number form in base "base" in [a_k,a_{k-1},..a_1,a_0] form
+        base: base in which "numb" is written
+
+    Returns:
+        Integer corresponding to the base 10 of "numb"
     """
     base_10 = 0
     for i in range(len(numb)):

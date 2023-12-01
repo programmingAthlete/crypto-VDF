@@ -1,4 +1,5 @@
-from crypto_VDF.dto import PublicParams
+from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
+from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.prime_numbers import PrimNumbers
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
@@ -8,16 +9,16 @@ class PietrzakVDF(VDF):
 
     @classmethod
     def setup(cls, security_param, delay):
-        resp_q = PrimNumbers.k_bit_prim_number(security_param // 2)
-        resp_p = PrimNumbers.k_bit_prim_number(security_param // 2)
-        if any(not item.status for item in [resp_p, resp_p]):
-            raise Exception("Failed to generate random number")
+        try:
+            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2)
+            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2)
+        except PrimeNumberNotFound as exc:
+            raise exc
         return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay)
 
     @classmethod
     def gen(cls, public_params):
-        x = NumberTheory.generate_quadratic_residue(public_params.modulus)
-        return x
+        return NumberTheory.generate_quadratic_residue(public_params.modulus)
 
     @classmethod
     def eval(cls, public_params, input_param):

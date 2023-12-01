@@ -2,6 +2,8 @@ PROJECT_NAME = crypto_VDF
 
 PYTHON = python
 
+M = $(shell printf "\033[34;1m▶\033[0m")
+
 .PHONY: deps
 deps: $(info $(M) installing dependencies...)
 	pip install -r requirements.txt
@@ -21,3 +23,8 @@ tests: $(info $(M) testing package...)
 coverage: $(info $(M) coverage testing package...)  ## test coverage package
 	pip install -e . > /dev/null && pip install pytest pytest-cov > /dev/null
 	python -m pytest tests --cov=$(PROJECT_NAME) --cov-fail-under=0
+
+.PHONY: lint
+lint: $(info $(M) coverage testing package...)
+	pip install -e . > /dev/null && pip install flake8 > /dev/null
+	flake8 src/$(PROJECT_NAME)
