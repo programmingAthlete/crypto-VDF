@@ -14,7 +14,8 @@ class PrimNumbers:
         Generate an iterator object of k bits with the first bit being 1 (starting with the first bit being 0 is like
          having a k-1 bit number) and other k-1 random bits.
 
-        :param k: length of the iterator to return
+        Args:
+            k: length of the iterator to return
         """
         if k > 1:
             yield 1
@@ -38,16 +39,20 @@ class PrimNumbers:
         return True
 
     @classmethod
-    def k_bit_prim_number(cls, k, t=100, max_iter=10000):
+    def k_bit_prim_number(cls, k, t: int = 100, max_iter: int = 10000) -> KBitPrimeResponse:
         """
         Generate a k-bit prime number
 
-        :param k: length of bit of the prime number to generate
-        :param t: repeat parameter of the Fermat Test
-        :param max_iter: maximum possible iterations allowed for succeeding to generate the prime number -
+        Args:
+            k: length of bit of the prime number to generate
+            t: repeat parameter of the Fermat Test
+            max_iter: maximum possible iterations allowed for succeeding to generate the prime number -
             default max_iter = 10000 to have a high probability of successfully generating the prime number
              for k <= 2000 bits
-        :return: KBitPrimeResponse(status: bool, base_10: int, base_2: list)
+        Returns:
+            KBitPrimeResponse(status: bool, base_10: int, base_2: list)
+        Raises:
+            Raises PrimeNumberNotFound if the k-bt prime number is not fond
         """
         i = 0
         while i < max_iter:
@@ -57,4 +62,4 @@ class PrimNumbers:
             if response:
                 return KBitPrimeResponse(base_10=base_10_n, base_2=k_bit_n)
             i += 1
-        return PrimeNumberNotFound
+        raise PrimeNumberNotFound
