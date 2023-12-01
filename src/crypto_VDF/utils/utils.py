@@ -1,3 +1,6 @@
+import hashlib
+
+
 def square_sequences(a: int, steps: int, n: int) -> int:
     """
     Modular exponentiation
@@ -72,3 +75,14 @@ def base_to_10(numb: [int], base: int) -> int:
     for i in range(len(numb)):
         base_10 += numb[::-1][i] * base ** i
     return base_10
+
+
+def concat_hexs(*args):
+    hexs = [hex(item)[2:] for item in args]
+    return int(''.join(hexs), 16)
+
+
+def flat_shamir_hash(x: int, y: int) -> int:
+    i = hex(x)[2:] + hex(y)[2:]
+    h = hashlib.sha256(bytes.fromhex(i)).hexdigest()
+    return int(h, 16)
