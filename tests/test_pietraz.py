@@ -45,3 +45,21 @@ class TestPietrazVDF(unittest.TestCase):
         proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
         verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
         self.assertTrue(verification)
+
+        pp = PublicParams(delay=102, modulus=modulus)
+        out = PietrzakVDF.sol(public_params=pp, input_param=x)
+        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
+        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
+        self.assertTrue(verification)
+
+        pp = PublicParams(delay=402, modulus=modulus)
+        out = PietrzakVDF.sol(public_params=pp, input_param=x)
+        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
+        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
+        self.assertTrue(verification)
+
+        pp = PublicParams(delay=602, modulus=modulus)
+        out = PietrzakVDF.sol(public_params=pp, input_param=x)
+        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
+        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
+        self.assertTrue(verification)
