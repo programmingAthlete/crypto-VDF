@@ -57,3 +57,7 @@ class NumberTheory:
             i += 1
         raise QuadraticResidueFailed(
             f"Failed to create a quadratic residue + of modulus {modulus} in {max_iters} iterations")
+
+    @staticmethod
+    def modular_abs(x, n):
+        return min(x, n - x)

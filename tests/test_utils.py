@@ -1,5 +1,6 @@
 import unittest
 
+from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.utils import exp_modular, square_sequences, concat_hexs
 
 
@@ -18,10 +19,19 @@ class TestUtils(unittest.TestCase):
     def test_squaring_sequence(self):
         res = square_sequences(2, 4, 3)
         self.assertEqual(res, 1)
+        res = square_sequences(10, 1, 21)
+        self.assertEqual(res, 16)
 
     def test_concat_hexs(self):
         x1 = 1
         x2 = 2
         res = concat_hexs(1, 2)
-        h1, h2 = hex(x1)[2:], hex(x2)[2:]
-        self.assertEqual(int(h1+h2, 16), res)
+        h1, h2 = '{:02x}'.format(x1), '{:02x}'.format(x2)
+        self.assertEqual(int(h1 + h2, 16), res)
+
+        res = concat_hexs(10, 2, 256)
+
+    def test_modular_abs(self):
+        self.assertEqual(NumberTheory.modular_abs(16, 21) , NumberTheory.modular_abs(4, 21))
+        a = NumberTheory.modular_abs(16, 21)
+        b = 1
