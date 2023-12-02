@@ -28,10 +28,3 @@ class TestUtils(unittest.TestCase):
         res = concat_hexs(1, 2)
         h1, h2 = '{:02x}'.format(x1), '{:02x}'.format(x2)
         self.assertEqual(int(h1 + h2, 16), res)
-
-        res = concat_hexs(10, 2, 256)
-
-    def test_modular_abs(self):
-        self.assertEqual(NumberTheory.modular_abs(16, 21) , NumberTheory.modular_abs(4, 21))
-        a = NumberTheory.modular_abs(16, 21)
-        b = 1

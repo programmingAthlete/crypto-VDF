@@ -28,8 +28,7 @@ def cmd_sol(x: int = 13, delay: int = 1, modulus: int = 21):
 @app.command(name='verify')
 def cmd_verif(x: int = 16384, y: int = 6, delay: int = 1, modulus: int = 21, log: bool = False):
     pp = PublicParams(modulus=modulus, delay=delay)
-    proof = [16, 1, 16420, 16430, 16438, 16454]
-    proof = [10]
+    proof = [16]
     out = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=y, proof=proof, log=log)
     print(out)
 

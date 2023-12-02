@@ -49,7 +49,9 @@ class PietrzakVDF(VDF):
             return False
         x_i = input_param
         y_i = output_param
-        for i in range(1, len(proof)):
+        if len(proof) == 0:
+            return y_i == (x_i ** 2) % public_params.modulus
+        for i in range(len(proof)):
             t = public_params.delay / (2 ** i)
             _log.debug(f"2 to t: {2 ** t}")
             h_in = concat_hexs(x_i, int(2 ** t), y_i)
@@ -61,10 +63,8 @@ class PietrzakVDF(VDF):
             y_i = (exp_modular(a=proof[i], exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
             _log.info(NumberTheory.modular_abs(y_i, public_params.modulus))
             _log.debug(f"x = {x_i} and y = {y_i}")
-            # assert y_i == (x_i ** (2 ** t)) % public_params.modulus
-            # y_i += (proof[i] ** r_i * y_i) % public_params.modulus
-        print(x_i, y_i)
-        return y_i == (x_i ** 2) % public_params.modulus
+        _log.debug(f"x = {x_i} and y = {y_i}")
+        return y_i == exp_modular(a=x_i, exponent=2, n=public_params.modulus)
 
     @staticmethod
     def compute_proof(public_params: PublicParams, input_param, output_param, log: bool = False) -> List[int]:
@@ -73,18 +73,18 @@ class PietrzakVDF(VDF):
         x_i = input_param
         y_i = output_param
         _log.info(f"Initial: {(x_i ** 2) % public_params.modulus}")
-        if public_params.delay == 1:
-            return []
         mu = []
-        for i in range(1, public_params.delay):
-            t = public_params.delay / (2 ** (i + 1))
+        i = 1
+        while public_params.delay != i:
+            t = public_params.delay / (2 ** i)
             exp = int(2 ** t)
             _log.debug(f"x = {x_i}, y={y_i}, exp = {exp}")
             mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
             _log.debug(f"mu_i = {mu_i}")
-            t_step = public_params.delay / (2 ** i)
-            _log.debug(f"2 to t: {2 ** t_step}")
+
+            t_step = public_params.delay / (int(2 ** (i - 1)))
+            _log.debug(f"2 to t: {int(t_step)}")
             h_in = concat_hexs(int(x_i), int(2 ** t_step), int(y_i))
             _log.debug(f"Hash input: {h_in}")
             r_i = flat_shamir_hash(x=h_in, y=int(mu_i))
@@ -99,6 +99,7 @@ class PietrzakVDF(VDF):
             a = (y_i ** (int(2 ** t))) % public_params.modulus
             _log.debug(f"check: {a}")
             mu.append(mu_i)
+            i += 1
         return mu
 
 
