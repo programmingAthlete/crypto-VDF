@@ -1,3 +1,6 @@
+import hashlib
+
+
 def square_sequences(a: int, steps: int, n: int) -> int:
     """
     Modular exponentiation
@@ -10,9 +13,9 @@ def square_sequences(a: int, steps: int, n: int) -> int:
     Returns:
         a^exponent (mod n)
     """
-    c = abs((a * a) % n)
+    c = a % n
     for _ in range(steps):
-        c *= abs((a * a) % n)
+        c = abs((c * c) % n)
     return c
 
 
@@ -72,3 +75,34 @@ def base_to_10(numb: [int], base: int) -> int:
     for i in range(len(numb)):
         base_10 += numb[::-1][i] * base ** i
     return base_10
+
+
+def pad_zeros(func):
+    def wrapper(x):
+        f = func(x)
+        if len(f) % 2 == 0:
+            return f
+        else:
+            return '0' + f
+
+    return wrapper
+
+@pad_zeros
+def get_hex(x):
+    return '{:02x}'.format(x)
+
+
+def concat_hexs(*args):
+    # hexs = [bytes.fromhex(get_hex(item)) for item in args]
+    # hex_string = b''.join(hexs).hex()
+    # a = int(hex_string, 16)
+    hexs2 = [get_hex(item) for item in args]
+    hex_string2 = ''.join(hexs2)
+    # assert a == int(hex_string2, 16)
+    return int(hex_string2, 16)
+
+
+def flat_shamir_hash(x: int, y: int) -> int:
+    i = bytes.fromhex(get_hex(x)) + bytes.fromhex(get_hex(y))
+    h = hashlib.sha256(i).hexdigest()
+    return int(h, 16)
