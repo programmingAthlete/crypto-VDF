@@ -17,6 +17,8 @@ setup(
     url="https://github.com/programmingAthlete/crypto-VDF.git",
     packages=find_packages(where="src", include=["crypto_VDF*"]),
     package_dir={"": "src"},
+    console_scripts={
+        "cryptoVDF": "crypto_VDF.entry_point:main"},
     install_requires=requirements,
     zip_safe=False
 )
