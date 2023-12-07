@@ -12,3 +12,4 @@ class TestNumberTheory(unittest.TestCase):
     def test_generate_random_quadratic_residue(self):
         x = NumberTheory.generate_quadratic_residue(1000000000)
         self.assertIsNotNone(x)
+
