@@ -32,16 +32,22 @@ class PrimNumbers:
         :return: True if n is probable prime and False if it isn't a probable prime
         """
         # d*2^s = n - 1
-
+        if (n == 0) or ((n % 2) == 0):
+            return False
+        
+        if n == 3:
+            return True
+        
         power = 0
         target = n-1
         while target % 2 == 0:
             target //= 2
             power +=1
         
+        
         for _ in range(t):
             a = randint(2, n-2)
-            x = exp_modular(a, target, n)
+            x = exp_modular(a, (n-1)//power, n)
             y = 0
             for _ in range(power):
                 y = exp_modular(x,2, n)
