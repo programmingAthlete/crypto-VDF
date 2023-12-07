@@ -17,7 +17,7 @@ _log = logging.getLogger(__name__)
 _log.setLevel(logging.INFO)
 
 
-# x = 10
+# x = 10 11
 @app.command(name='generate-and-verify')
 def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the VDF")],
                             delay: Annotated[int, typer.Option(help="Delay parameter of the VDF")] = 2,
