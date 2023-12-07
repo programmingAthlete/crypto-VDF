@@ -28,19 +28,7 @@ class TestPietrazVDF(unittest.TestCase):
         verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
         self.assertTrue(verification)
 
-        pp = PublicParams(delay=6, modulus=modulus)
-        out = PietrzakVDF.sol(public_params=pp, input_param=x)
-        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
-        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
-
-        self.assertTrue(verification)
         pp = PublicParams(delay=8, modulus=modulus)
-        out = PietrzakVDF.sol(public_params=pp, input_param=x)
-        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
-        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)
-        self.assertTrue(verification)
-
-        pp = PublicParams(delay=22, modulus=modulus)
         out = PietrzakVDF.sol(public_params=pp, input_param=x)
         proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=out)
         verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)

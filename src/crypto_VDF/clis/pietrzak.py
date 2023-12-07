@@ -1,3 +1,6 @@
+import logging
+from typing import Annotated
+
 import typer
 from orjson import orjson
 
@@ -7,6 +10,31 @@ from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
+
+logging.basicConfig(level=logging.INFO)
+
+_log = logging.getLogger(__name__)
+_log.setLevel(logging.INFO)
+
+
+# x = 10 11
+@app.command(name='generate-and-verify')
+def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the VDF")],
+                            delay: Annotated[int, typer.Option(help="Delay parameter of the VDF")] = 2,
+                            modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21,
+                            verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
+    pp = PublicParams(modulus=modulus, delay=delay)
+    _log.info(f"Generated the public parameters")
+    print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
+    output = PietrzakVDF.sol(input_param=x, public_params=pp)
+    _log.info("Produced the output")
+    print(f"\nProduced the output {output}\n")
+    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
+    _log.info(f"Produced the proof: {proof}")
+    verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
+    _log.info(f"Verification Finished")
+    print(f"\nVerification: {verification}")
+    assert verification
 
 
 # out 16384 delay 6 modulus 21
