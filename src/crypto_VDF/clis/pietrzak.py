@@ -1,3 +1,5 @@
+import logging
+
 import typer
 from orjson import orjson
 
@@ -7,6 +9,25 @@ from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
+
+logging.basicConfig(level=logging.INFO)
+
+_log = logging.getLogger(__name__)
+_log.setLevel(logging.INFO)
+
+
+# x = 10
+@app.command(name='generate-and-verify')
+def cmd_generate_and_verify(x: int, delay: int = 2, modulus: int = 21, verbose: bool = False):
+    pp = PublicParams(modulus=modulus, delay=delay)
+    _log.info(f"Generated the public parameters: {orjson.loads(pp.json())}")
+    output = PietrzakVDF.sol(input_param=x, public_params=pp)
+    _log.info(f"Produced the output {output}")
+    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
+    _log.info(f"Produced the proof: {proof}")
+    verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
+    _log.info(f"Verification: {verification}")
+    assert verification
 
 
 # out 16384 delay 6 modulus 21

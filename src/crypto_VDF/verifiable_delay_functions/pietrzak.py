@@ -52,6 +52,7 @@ class PietrzakVDF(VDF):
         if len(proof) == 0:
             return y_i == (x_i ** 2) % public_params.modulus
         for i in range(len(proof)):
+            print()
             t = public_params.delay / (2 ** i)
             _log.debug(f"2 to t: {2 ** t}")
             h_in = concat_hexs(x_i, int(2 ** t), y_i)
@@ -59,11 +60,16 @@ class PietrzakVDF(VDF):
             r_i = flat_shamir_hash(x=h_in, y=proof[i])
             _log.debug(f"r_i = {r_i}")
             x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * proof[i]) % public_params.modulus
-            _log.info(NumberTheory.modular_abs(x_i, public_params.modulus))
             y_i = (exp_modular(a=proof[i], exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
-            _log.info(NumberTheory.modular_abs(y_i, public_params.modulus))
             _log.debug(f"x = {x_i} and y = {y_i}")
-        _log.debug(f"x = {x_i} and y = {y_i}")
+            _log.debug(
+                f"|xi| = {NumberTheory.modular_abs(x_i, public_params.modulus)},"
+                f" |yi| = {NumberTheory.modular_abs(y_i, public_params.modulus)},")
+        print()
+        _log.info(f"x = {x_i} and y = {y_i}")
+        _log.info(
+            f"|x| = {NumberTheory.modular_abs(x_i, public_params.modulus)}, "
+            f"|y| = {NumberTheory.modular_abs(y_i, public_params.modulus)}")
         return y_i == exp_modular(a=x_i, exponent=2, n=public_params.modulus)
 
     @staticmethod
@@ -75,10 +81,12 @@ class PietrzakVDF(VDF):
         _log.info(f"Initial: {(x_i ** 2) % public_params.modulus}")
         mu = []
         i = 1
-        while public_params.delay != i:
+        t = public_params.delay
+        while int(t) > 1:
+            print()
             t = public_params.delay / (2 ** i)
             exp = int(2 ** t)
-            _log.debug(f"x = {x_i}, y={y_i}, exp = {exp}")
+            _log.debug(f"x = {x_i}, y={y_i}, exp = {exp}, t = {t}")
             mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
             _log.debug(f"mu_i = {mu_i}")
