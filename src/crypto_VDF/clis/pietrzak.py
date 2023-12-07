@@ -1,4 +1,5 @@
 import logging
+from typing import Annotated
 
 import typer
 from orjson import orjson
@@ -18,15 +19,21 @@ _log.setLevel(logging.INFO)
 
 # x = 10
 @app.command(name='generate-and-verify')
-def cmd_generate_and_verify(x: int, delay: int = 2, modulus: int = 21, verbose: bool = False):
+def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the VDF")],
+                            delay: Annotated[int, typer.Option(help="Delay parameter of the VDF")] = 2,
+                            modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21,
+                            verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
     pp = PublicParams(modulus=modulus, delay=delay)
-    _log.info(f"Generated the public parameters: {orjson.loads(pp.json())}")
+    _log.info(f"Generated the public parameters")
+    print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
     output = PietrzakVDF.sol(input_param=x, public_params=pp)
-    _log.info(f"Produced the output {output}")
+    _log.info("Produced the output")
+    print(f"\nProduced the output {output}\n")
     proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
     _log.info(f"Produced the proof: {proof}")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
-    _log.info(f"Verification: {verification}")
+    _log.info(f"Verification Finished")
+    print(f"\nVerification: {verification}")
     assert verification
 
 
