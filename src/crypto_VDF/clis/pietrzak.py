@@ -24,15 +24,12 @@ def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the 
                             modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21,
                             verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
     pp = PublicParams(modulus=modulus, delay=delay)
-    _log.info(f"Generated the public parameters")
     print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
     output = PietrzakVDF.sol(input_param=x, public_params=pp)
-    _log.info("Produced the output")
     print(f"\nProduced the output {output}\n")
     proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
-    _log.info(f"Produced the proof: {proof}")
+    print(f"\nProduced the proof: {proof}\n")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
-    _log.info(f"Verification Finished")
     print(f"\nVerification: {verification}")
     assert verification
 
