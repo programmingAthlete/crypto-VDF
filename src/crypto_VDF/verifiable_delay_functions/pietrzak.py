@@ -19,8 +19,9 @@ class PietrzakVDF(VDF):
     @classmethod
     def setup(cls, security_param, delay):
         try:
-            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2)
-            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2)
+            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
+            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
+            _log.info(f"[SETUP] Prime numbers p = {resp_p.base_10}, q = {resp_q.base_10}")
         except PrimeNumberNotFound as exc:
             raise exc
         return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay)
@@ -58,8 +59,12 @@ class PietrzakVDF(VDF):
             _log.debug(f"[VERIFY] Hash input: {h_in}")
             r_i = flat_shamir_hash(x=h_in, y=item)
             _log.debug(f"[VERIFY] r_i = {r_i}")
-            x_i = NumberTheory.modular_abs((exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus, public_params.modulus)
-            y_i = NumberTheory.modular_abs((exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus, public_params.modulus)
+            x_i = NumberTheory.modular_abs(
+                (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus,
+                public_params.modulus)
+            y_i = NumberTheory.modular_abs(
+                (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
+                public_params.modulus)
 
             # x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus
             # y_i = (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
@@ -68,7 +73,7 @@ class PietrzakVDF(VDF):
             _log.debug(
                 f"[VERIFY] |xi| = {NumberTheory.modular_abs(x_i, public_params.modulus)},"
                 f" |yi| = {NumberTheory.modular_abs(y_i, public_params.modulus)}\n")
-            t = t / 2 if t % 2 == 0 else (t + 1) / 2
+            t = t // 2 if t % 2 == 0 else (t + 1) // 2
         _log.info(f"[VERIFY] x = {x_i} and y = {y_i}")
         _log.info(
             f"[VERIFY] |x| = {NumberTheory.modular_abs(x_i, public_params.modulus)}, "
@@ -89,7 +94,7 @@ class PietrzakVDF(VDF):
         while int(t) > 1:
             # Update t
             t_previous = t
-            t = t / 2 if t % 2 == 0 else (t + 1) / 2
+            t = t // 2 if t % 2 == 0 else (t + 1) // 2
             _log.debug(f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, exp = {int(2 ** t)}, t = {t}")
             # Calculate mi, hash and ri
             mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=int(2 ** t))
@@ -111,10 +116,10 @@ class PietrzakVDF(VDF):
             _log.debug(f"[COMPUTE-PROOF] x = {x_i} and y = {y_i}")
 
             # Additional checks
-            a = (x_i ** 2) % public_params.modulus
-            _log.debug(f"[COMPUTE-PROOF] check: {a}")
-            a = (y_i ** (int(2 ** t))) % public_params.modulus
-            _log.debug(f"[COMPUTE-PROOF] check: {a}\n")
+            # a = (x_i ** 2) % public_params.modulus
+            # _log.debug(f"[COMPUTE-PROOF] check: {a}")
+            # a = (y_i ** (int(2 ** t))) % public_params.modulus
+            # _log.debug(f"[COMPUTE-PROOF] check: {a}\n")
             mu.append(mu_i)
             i += 1
         _log.info(f"[COMPUTE-PROOF] Proof: {mu}")
