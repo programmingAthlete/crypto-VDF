@@ -1,5 +1,7 @@
 import hashlib
 
+from crypto_VDF.utils.number_theory import NumberTheory
+
 
 def square_sequences(a: int, steps: int, n: int) -> int:
     """
@@ -15,7 +17,7 @@ def square_sequences(a: int, steps: int, n: int) -> int:
     """
     c = a % n
     for _ in range(steps):
-        c = abs((c * c) % n)
+        c = NumberTheory.modular_abs((c * c) % n, n)
     return c
 
 
@@ -86,6 +88,7 @@ def pad_zeros(func):
             return '0' + f
 
     return wrapper
+
 
 @pad_zeros
 def get_hex(x):

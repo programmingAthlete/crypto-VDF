@@ -20,7 +20,7 @@ class TestUtils(unittest.TestCase):
         res = square_sequences(2, 4, 3)
         self.assertEqual(res, 1)
         res = square_sequences(10, 1, 21)
-        self.assertEqual(res, 16)
+        self.assertEqual(res, NumberTheory.modular_abs(16, 21))
 
     def test_concat_hexs(self):
         x1 = 1

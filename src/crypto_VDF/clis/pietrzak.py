@@ -17,6 +17,23 @@ _log = logging.getLogger(__name__)
 _log.setLevel(logging.INFO)
 
 
+@app.command(name="full-vdf")
+def cmd_full_vdf(
+        delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
+        security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10
+):
+    pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
+    print(f"Public parameters: {orjson.loads(pp.json())}\n")
+    x = PietrzakVDF.gen(pp)
+    print(f"\nGenerated input: {x}\n")
+    output, proof = PietrzakVDF.eval(public_params=pp, input_param=x)
+    print(f"\nGenerated output: {x}")
+    print(f"Generated Proof: {proof}\n")
+    verif = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, proof=proof)
+    print(f"\nVerification: {verif}")
+    assert verif
+
+
 # x = 10 11
 @app.command(name='generate-and-verify')
 def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the VDF")],
@@ -24,30 +41,35 @@ def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the 
                             modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21,
                             verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
     pp = PublicParams(modulus=modulus, delay=delay)
-    _log.info(f"Generated the public parameters")
     print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
     output = PietrzakVDF.sol(input_param=x, public_params=pp)
-    _log.info("Produced the output")
     print(f"\nProduced the output {output}\n")
     proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
-    _log.info(f"Produced the proof: {proof}")
+    print(f"\nProduced the proof: {proof}\n")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
-    _log.info(f"Verification Finished")
     print(f"\nVerification: {verification}")
     assert verification
 
 
 # out 16384 delay 6 modulus 21
 @app.command(name='proof')
-def cmd_proof(x: int = 10, y: int = 16, delay: int = 1, modulus: int = 21, log: bool = False):
+def cmd_proof(
+        x: Annotated[int, typer.Argument(help="Input to the VDF")],
+        y: Annotated[int, typer.Argument(help="Output to the VDF")],
+        delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 1,
+        modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21,
+        verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
     pp = PublicParams(modulus=modulus, delay=delay)
-    out = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=y, log=log)
+    out = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=y, log=verbose)
     print(out)
 
 
 # x 13
 @app.command(name='output')
-def cmd_sol(x: int = 13, delay: int = 1, modulus: int = 21):
+def cmd_sol(
+        x: Annotated[int, typer.Argument(help="Input to the VDF")],
+        delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 1,
+        modulus: Annotated[int, typer.Option(help="Modulus of the Zn")] = 21):
     pp = PublicParams(modulus=modulus, delay=delay)
     out = PietrzakVDF.sol(input_param=x, public_params=pp)
     print(out)

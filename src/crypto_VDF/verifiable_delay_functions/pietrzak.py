@@ -19,8 +19,9 @@ class PietrzakVDF(VDF):
     @classmethod
     def setup(cls, security_param, delay):
         try:
-            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2)
-            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2)
+            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
+            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
+            _log.info(f"[SETUP] Prime numbers p = {resp_p.base_10}, q = {resp_q.base_10}")
         except PrimeNumberNotFound as exc:
             raise exc
         return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay)
@@ -45,32 +46,40 @@ class PietrzakVDF(VDF):
             _log.setLevel(logging.DEBUG)
         if any(NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=item) is False for item in
                [input_param, output_param]):
-            _log.error("Not Quadratic residues")
+            _log.error("[VERIFY] Not Quadratic residues")
             return False
         x_i = input_param
         y_i = output_param
         if len(proof) == 0:
-            return y_i == (x_i ** 2) % public_params.modulus
-        for i in range(len(proof)):
-            print()
-            t = public_params.delay / (2 ** i)
-            _log.debug(f"2 to t: {2 ** t}")
+            return y_i == NumberTheory.modular_abs((x_i ** 2) % public_params.modulus, public_params.modulus)
+        t = public_params.delay
+        for item in proof:
+            _log.debug(f"[VERIFY] 2 to t: {2 ** t}, t = {t}")
             h_in = concat_hexs(x_i, int(2 ** t), y_i)
-            _log.debug(f"Hash input: {h_in}")
-            r_i = flat_shamir_hash(x=h_in, y=proof[i])
-            _log.debug(f"r_i = {r_i}")
-            x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * proof[i]) % public_params.modulus
-            y_i = (exp_modular(a=proof[i], exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
-            _log.debug(f"x = {x_i} and y = {y_i}")
+            _log.debug(f"[VERIFY] Hash input: {h_in}")
+            r_i = flat_shamir_hash(x=h_in, y=item)
+            _log.debug(f"[VERIFY] r_i = {r_i}")
+            x_i = NumberTheory.modular_abs(
+                (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus,
+                public_params.modulus)
+            y_i = NumberTheory.modular_abs(
+                (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
+                public_params.modulus)
+
+            # x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus
+            # y_i = (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
+
+            _log.debug(f"[VERIFY] x = {x_i} and y = {y_i}")
             _log.debug(
-                f"|xi| = {NumberTheory.modular_abs(x_i, public_params.modulus)},"
-                f" |yi| = {NumberTheory.modular_abs(y_i, public_params.modulus)},")
-        print()
-        _log.info(f"x = {x_i} and y = {y_i}")
+                f"[VERIFY] |xi| = {NumberTheory.modular_abs(x_i, public_params.modulus)},"
+                f" |yi| = {NumberTheory.modular_abs(y_i, public_params.modulus)}\n")
+            t = t // 2 if t % 2 == 0 else (t + 1) // 2
+        _log.info(f"[VERIFY] x = {x_i} and y = {y_i}")
         _log.info(
-            f"|x| = {NumberTheory.modular_abs(x_i, public_params.modulus)}, "
+            f"[VERIFY] |x| = {NumberTheory.modular_abs(x_i, public_params.modulus)}, "
             f"|y| = {NumberTheory.modular_abs(y_i, public_params.modulus)}")
-        return y_i == exp_modular(a=x_i, exponent=2, n=public_params.modulus)
+        return y_i == NumberTheory.modular_abs(exp_modular(a=x_i, exponent=2, n=public_params.modulus),
+                                               public_params.modulus)
 
     @staticmethod
     def compute_proof(public_params: PublicParams, input_param, output_param, log: bool = False) -> List[int]:
@@ -78,36 +87,42 @@ class PietrzakVDF(VDF):
             _log.setLevel(logging.DEBUG)
         x_i = input_param
         y_i = output_param
-        _log.info(f"Initial: {(x_i ** 2) % public_params.modulus}")
+        _log.info(f"[COMPUTE-PROOF] Initial state: x = {x_i}, x**2 = {(x_i ** 2) % public_params.modulus}, y = {y_i}")
         mu = []
         i = 1
         t = public_params.delay
         while int(t) > 1:
-            print()
-            t = public_params.delay / (2 ** i)
-            exp = int(2 ** t)
-            _log.debug(f"x = {x_i}, y={y_i}, exp = {exp}, t = {t}")
-            mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
+            # Update t
+            t_previous = t
+            t = t // 2 if t % 2 == 0 else (t + 1) // 2
+            _log.debug(f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, exp = {int(2 ** t)}, t = {t}")
+            # Calculate mi, hash and ri
+            mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=int(2 ** t))
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
-            _log.debug(f"mu_i = {mu_i}")
-
-            t_step = public_params.delay / (int(2 ** (i - 1)))
-            _log.debug(f"2 to t: {int(t_step)}")
-            h_in = concat_hexs(int(x_i), int(2 ** t_step), int(y_i))
-            _log.debug(f"Hash input: {h_in}")
+            _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i}")
+            _log.debug(f"[COMPUTE-PROOF] 2 to t: {int(t_previous)}")
+            h_in = concat_hexs(int(x_i), int(2 ** t_previous), int(y_i))
+            _log.debug(f"[COMPUTE-PROOF] Hash input: {h_in}")
             r_i = flat_shamir_hash(x=h_in, y=int(mu_i))
-            _log.debug(f"r_i = {r_i}")
+            _log.debug(f"[COMPUTE-PROOF] r_i = {r_i}")
 
             # Update x_i any y_i
-            x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * mu_i) % public_params.modulus
-            y_i = (exp_modular(a=mu_i, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
-            _log.debug(f"x = {x_i} and y = {y_i}")
-            a = (x_i ** 2) % public_params.modulus
-            _log.debug(f"check: {a}")
-            a = (y_i ** (int(2 ** t))) % public_params.modulus
-            _log.debug(f"check: {a}")
+            x_i = NumberTheory.modular_abs(
+                (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * mu_i) % public_params.modulus,
+                public_params.modulus)
+            y_i = NumberTheory.modular_abs(
+                (exp_modular(a=mu_i, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
+                public_params.modulus)
+            _log.debug(f"[COMPUTE-PROOF] x = {x_i} and y = {y_i}")
+
+            # Additional checks
+            # a = (x_i ** 2) % public_params.modulus
+            # _log.debug(f"[COMPUTE-PROOF] check: {a}")
+            # a = (y_i ** (int(2 ** t))) % public_params.modulus
+            # _log.debug(f"[COMPUTE-PROOF] check: {a}\n")
             mu.append(mu_i)
             i += 1
+        _log.info(f"[COMPUTE-PROOF] Proof: {mu}")
         return mu
 
 
