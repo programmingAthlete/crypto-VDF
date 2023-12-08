@@ -3,15 +3,13 @@ from typing import List
 
 from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.prime_numbers import PrimNumbers
-from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular
+from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular, exp_non_modular
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 
-logging.basicConfig(level=logging.INFO)
-
-_log = logging.getLogger(__name__)
-_log.setLevel(logging.INFO)
+_log = get_logger(__name__)
 
 
 class PietrzakVDF(VDF):
@@ -55,7 +53,8 @@ class PietrzakVDF(VDF):
         t = public_params.delay
         for item in proof:
             _log.debug(f"[VERIFY] 2 to t: {2 ** t}, t = {t}")
-            h_in = concat_hexs(x_i, int(2 ** t), y_i)
+            exp = exp_non_modular(a=2, exponent=t)
+            h_in = concat_hexs(x_i, exp, y_i)
             _log.debug(f"[VERIFY] Hash input: {h_in}")
             r_i = flat_shamir_hash(x=h_in, y=item)
             _log.debug(f"[VERIFY] r_i = {r_i}")
@@ -93,16 +92,21 @@ class PietrzakVDF(VDF):
         t = public_params.delay
         while int(t) > 1:
             # Update t
+            # t_previous = public_params.delay // (2 ** (i - 1)) if t % 2 == 0 else (public_params.delay + 1) // (
+            #       2 ** (i - 1))
+            # t = public_params.delay // (2 ** i) if t % 2 == 0 else (public_params.delay + 1) // (2 ** i)
             t_previous = t
             t = t // 2 if t % 2 == 0 else (t + 1) // 2
-            _log.debug(f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, exp = {int(2 ** t)}, t = {t}")
+            exp = exp_non_modular(a=2, exponent=t)
+            exp_previous = exp_non_modular(a=2, exponent=t_previous)
+
+            _log.debug(f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, t = {t}, exp = {exp}, exp_previous = {exp_previous}")
             # Calculate mi, hash and ri
-            mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=int(2 ** t))
+            mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
-            _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i}")
-            _log.debug(f"[COMPUTE-PROOF] 2 to t: {int(t_previous)}")
-            h_in = concat_hexs(int(x_i), int(2 ** t_previous), int(y_i))
-            _log.debug(f"[COMPUTE-PROOF] Hash input: {h_in}")
+            h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
+            _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i},  2 to t: {int(t_previous)}, Hash input: {h_in}")
+            int(2 ** t_previous) % public_params.modulus
             r_i = flat_shamir_hash(x=h_in, y=int(mu_i))
             _log.debug(f"[COMPUTE-PROOF] r_i = {r_i}")
 
@@ -114,6 +118,10 @@ class PietrzakVDF(VDF):
                 (exp_modular(a=mu_i, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
                 public_params.modulus)
             _log.debug(f"[COMPUTE-PROOF] x = {x_i} and y = {y_i}")
+            # assert y_i == NumberTheory.modular_abs(
+            #     exp_modular(a=x_i, exponent=2, n=public_params.modulus) % public_params.modulus,
+            #     public_params.modulus
+            # )
 
             # Additional checks
             # a = (x_i ** 2) % public_params.modulus

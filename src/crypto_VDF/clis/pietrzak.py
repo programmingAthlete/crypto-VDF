@@ -6,15 +6,14 @@ from orjson import orjson
 
 from crypto_VDF.custom_errors.custom_exceptions import NotAQuadraticResidueException
 from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
 
-logging.basicConfig(level=logging.INFO)
 
-_log = logging.getLogger(__name__)
-_log.setLevel(logging.INFO)
+_log = get_logger(__name__)
 
 
 @app.command(name="full-vdf")
