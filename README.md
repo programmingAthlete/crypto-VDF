@@ -91,5 +91,6 @@ Delay of 2^(20)
 <code>cryptoVDF pietrzak generate-and-verify 359 --delay 1048576 --modulus 437 --verbose</code>
 
 # Full VDF
+Delay of 2^(20)
 
 <code>cryptoVDF pietrzak full-vdf --delay 1048576 --security-parameter 128</code>
