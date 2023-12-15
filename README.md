@@ -77,3 +77,20 @@ When merging to master the feature branch should be up-to-date - best thing to d
 <li>A feature branch should be merged only if its unit tests pass</li>
 <li>The merge to master branch should be done from the GutHub UI using the <b>squash and merge</b> option if the branch contains more than one commit</li>
 </ul>
+
+## Examples
+
+### Compute and Verify
+
+Delay of 2^(10)
+
+<code>cryptoVDF pietrzak generate-and-verify 359 --delay 1024 --modulus 437 --verbose</code>
+
+Delay of 2^(20)
+
+<code>cryptoVDF pietrzak generate-and-verify 359 --delay 1048576 --modulus 437 --verbose</code>
+
+# Full VDF
+Delay of 2^(20)
+
+<code>cryptoVDF pietrzak full-vdf --delay 1048576 --security-parameter 128</code>

@@ -1,4 +1,3 @@
-import logging
 from typing import Annotated
 
 import typer
@@ -6,27 +5,26 @@ from orjson import orjson
 
 from crypto_VDF.custom_errors.custom_exceptions import NotAQuadraticResidueException
 from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
 
-logging.basicConfig(level=logging.INFO)
-
-_log = logging.getLogger(__name__)
-_log.setLevel(logging.INFO)
+_log = get_logger(__name__)
 
 
 @app.command(name="full-vdf")
 def cmd_full_vdf(
         delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
-        security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10
+        security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
+        verbose: Annotated[bool, typer.Option(help="Show Debug logs")] = 10,
 ):
     pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
     print(f"Public parameters: {orjson.loads(pp.json())}\n")
     x = PietrzakVDF.gen(pp)
     print(f"\nGenerated input: {x}\n")
-    output, proof = PietrzakVDF.eval(public_params=pp, input_param=x)
+    output, proof = PietrzakVDF.eval(public_params=pp, input_param=x, verbose=verbose)
     print(f"\nGenerated output: {x}")
     print(f"Generated Proof: {proof}\n")
     verif = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, proof=proof)
@@ -44,7 +42,7 @@ def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the 
     print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
     output = PietrzakVDF.sol(input_param=x, public_params=pp)
     print(f"\nProduced the output {output}\n")
-    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
+    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, log=verbose)
     print(f"\nProduced the proof: {proof}\n")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
     print(f"\nVerification: {verification}")
