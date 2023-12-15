@@ -56,31 +56,28 @@ class PietrzakVDF(VDF):
             return y_i == NumberTheory.modular_abs((x_i ** 2) % public_params.modulus, public_params.modulus)
         t = public_params.delay
         for item in proof:
-            _log.debug(f"[VERIFY] 2 to t: {2 ** t}, t = {t}")
             exp = exp_non_modular(a=2, exponent=t)
             h_in = concat_hexs(x_i, exp, y_i)
-            _log.debug(f"[VERIFY] Hash input: {h_in}")
+            _log.debug(f"[VERIFY] x_i = {x_i}, y_i:{y_i}")
             r_i = flat_shamir_hash(x=h_in, y=item)
             _log.debug(f"[VERIFY] r_i = {r_i}")
-            x_i = NumberTheory.modular_abs(
-                (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus,
-                public_params.modulus)
-            y_i = NumberTheory.modular_abs(
-                (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
-                public_params.modulus)
+            # x_i = NumberTheory.modular_abs(
+            #     (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus,
+            #     public_params.modulus)
+            # y_i = NumberTheory.modular_abs(
+            #     (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
+            #     public_params.modulus)
+            x_i = NumberTheory.multiply(u=exp_modular(a=x_i, exponent=r_i, n=public_params.modulus), v=item,
+                                        n=public_params.modulus)
+            y_i = NumberTheory.multiply(u=exp_modular(a=item, exponent=r_i, n=public_params.modulus), v=y_i,
+                                        n=public_params.modulus)
 
             # x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus
             # y_i = (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
 
-            _log.debug(f"[VERIFY] x = {x_i} and y = {y_i}")
-            _log.debug(
-                f"[VERIFY] |xi| = {NumberTheory.modular_abs(x_i, public_params.modulus)},"
-                f" |yi| = {NumberTheory.modular_abs(y_i, public_params.modulus)}\n")
+            _log.debug(f"[VERIFY] x = {x_i} and y = {y_i}\n")
             t = cls.calc_next_step(step=t)
-        _log.info(f"[VERIFY] x = {x_i} and y = {y_i}")
-        _log.info(
-            f"[VERIFY] |x| = {NumberTheory.modular_abs(x_i, public_params.modulus)}, "
-            f"|y| = {NumberTheory.modular_abs(y_i, public_params.modulus)}")
+        _log.info(f"[VERIFY] x = {x_i} and y = {y_i}\n")
         return y_i == NumberTheory.modular_abs(exp_modular(a=x_i, exponent=2, n=public_params.modulus),
                                                public_params.modulus)
 
@@ -97,7 +94,7 @@ class PietrzakVDF(VDF):
         y_half = square_sequences(a=input_param, n=public_params.modulus, steps=t_half)
         y = square_sequences(a=y_half, n=public_params.modulus, steps=t_half)
         y_i = y
-        _log.info(f"[COMPUTE-PROOF] Initial state: x = {x_i}, x**2 = {(x_i ** 2) % public_params.modulus},y = {y_i}")
+        _log.info(f"[COMPUTE-PROOF] Initial state: x = {x_i}, y = {y_i}")
 
         mu = []
         i = 1
@@ -118,13 +115,12 @@ class PietrzakVDF(VDF):
                 mu_i = square_sequences(a=x_i, steps=t, n=public_params.modulus)
             exp_previous = exp_non_modular(a=2, exponent=t_previous)
             _log.debug(
-                f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, t = {t}, t_previous = {t_previous},"
-                f" exp_previous = {exp_previous}")
+                f"[COMPUTE-PROOF] x_i = {x_i}, y_i={y_i}, t = {t}, t_previous = {t_previous}")
 
             # mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
             h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
-            _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i},  2 to t: {int(t_previous)}, Hash input: {h_in}")
+            # _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i}, x_1: {x_i}, exp_previous: {exp_previous}, y_i:{y_i}")
 
             r_i = flat_shamir_hash(x=h_in, y=int(mu_i))
             _log.debug(f"[COMPUTE-PROOF] r_i = {r_i}")
@@ -135,7 +131,7 @@ class PietrzakVDF(VDF):
             y_i = NumberTheory.multiply(u=exp_modular(a=mu_i, exponent=r_i, n=public_params.modulus), v=y_i,
                                         n=public_params.modulus)
 
-            _log.debug(f"[COMPUTE-PROOF] x = {x_i} and y = {y_i}")
+            _log.debug(f"[COMPUTE-PROOF] x_i = {x_i} and y_i = {y_i}\n")
             mu.append(mu_i)
             i += 1
         _log.info(f"[COMPUTE-PROOF] Proof: {mu}")

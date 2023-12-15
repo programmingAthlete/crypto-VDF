@@ -18,7 +18,7 @@ _log = get_logger(__name__)
 def cmd_full_vdf(
         delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
         security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
-        verbose: Annotated[bool, typer.Option(help="Show Debug logs")] = 10,
+        verbose: Annotated[bool, typer.Option(help="Show Debug logs")] = False,
 ):
     pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
     print(f"Public parameters: {orjson.loads(pp.json())}\n")
