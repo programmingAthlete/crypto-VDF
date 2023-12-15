@@ -61,3 +61,8 @@ class NumberTheory:
     @staticmethod
     def modular_abs(x, n):
         return min(x, n - x)
+
+    @classmethod
+    def multiply(cls, u: int, v: int, n: int):
+        x = (u * v) % n
+        return NumberTheory.modular_abs(x, n)
