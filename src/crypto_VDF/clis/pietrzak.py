@@ -43,7 +43,7 @@ def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the 
     print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
     output = PietrzakVDF.sol(input_param=x, public_params=pp)
     print(f"\nProduced the output {output}\n")
-    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, output_param=output, log=verbose)
+    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, log=verbose)
     print(f"\nProduced the proof: {proof}\n")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, log=verbose, proof=proof)
     print(f"\nVerification: {verification}")

@@ -6,7 +6,7 @@ from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.prime_numbers import PrimNumbers
-from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular, exp_non_modular
+from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular, exp_non_modular, square_sequences
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 
 _log = get_logger(__name__)
@@ -31,6 +31,10 @@ class PietrzakVDF(VDF):
     @classmethod
     def sol(cls, public_params, input_param):
         return cls.eval_function(public_params=public_params, input_param=input_param)
+
+    @classmethod
+    def compute_output(cls, public_params, input_param, delay):
+        return square_sequences(steps=delay, a=input_param, n=public_params.modulus)
 
     @classmethod
     def eval(cls, public_params, input_param):
@@ -80,13 +84,17 @@ class PietrzakVDF(VDF):
         return y_i == NumberTheory.modular_abs(exp_modular(a=x_i, exponent=2, n=public_params.modulus),
                                                public_params.modulus)
 
-    @staticmethod
-    def compute_proof(public_params: PublicParams, input_param, output_param, log: bool = False) -> List[int]:
+    @classmethod
+    def compute_proof(cls, public_params: PublicParams, input_param, log: bool = False) -> List[int]:
         if log is True:
             _log.setLevel(logging.DEBUG)
         x_i = input_param
-        y_i = output_param
-        _log.info(f"[COMPUTE-PROOF] Initial state: x = {x_i}, x**2 = {(x_i ** 2) % public_params.modulus}, y = {y_i}")
+        t_half = public_params.delay // 2  # if public_params.delay % 2 == 0 else (public_params.delay+1) // 2
+        y_half = square_sequences(a=input_param, n=public_params.modulus, steps=t_half)
+        y = square_sequences(a=y_half, n=public_params.modulus, steps=t_half)
+        assert y == square_sequences(a=x_i, n=public_params.modulus, steps=public_params.delay)
+        y_i = y
+        _log.info(f"[COMPUTE-PROOF] Initial state: x = {x_i}, x**2 = {(x_i ** 2) % public_params.modulus},y = {y_i}")
         mu = []
         i = 1
         t = public_params.delay
@@ -97,12 +105,14 @@ class PietrzakVDF(VDF):
             # t = public_params.delay // (2 ** i) if t % 2 == 0 else (public_params.delay + 1) // (2 ** i)
             t_previous = t
             t = t // 2 if t % 2 == 0 else (t + 1) // 2
-            exp = exp_non_modular(a=2, exponent=t)
             exp_previous = exp_non_modular(a=2, exponent=t_previous)
 
-            _log.debug(f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, t = {t}, exp = {exp}, exp_previous = {exp_previous}")
+            _log.debug(
+                f"[COMPUTE-PROOF] x = {x_i}, y={y_i}, t = {t}, t_previous = {t_previous},"
+                f" exp_previous = {exp_previous}")
             # Calculate mi, hash and ri
-            mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
+            mu_i = square_sequences(a=x_i, steps=t, n=public_params.modulus)
+            # mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
             h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
             _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i},  2 to t: {int(t_previous)}, Hash input: {h_in}")
