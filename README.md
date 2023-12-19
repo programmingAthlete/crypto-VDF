@@ -27,7 +27,7 @@ Ourside of the source folder, the following files can be found
 <ul>
 <li>Makefile</li>
 <li>requirements.txt - dependencies file for the project</li>
-<li>requirements.txt - dependencies file for the tests (dependencies for the project + potential additional dependencies)</li>
+<li>requirements-tests.txt - dependencies file for the tests (dependencies for the project + potential additional dependencies)</li>
 <li>setup.py - installation file for the package</li>
 <li>setup.cfg - file containing additional information for the setup of the project (such as the CLI entry point) and potential settings for linting and test coverage</li>
 </ul>
@@ -75,7 +75,7 @@ When merging to master the feature branch should be up-to-date - best thing to d
 <code>git rebase develop</code>, then <code>git push -f</code>
 </li>
 <li>A feature branch should be merged only if its unit tests pass</li>
-<li>The merge to master branch should be done from the GutHub UI using the <b>squash and merge</b> option if the branch contains more than one commit</li>
+<li>The merge to master branch should be done from the GitHub UI using the <b>squash and merge</b> option if the branch contains more than one commit</li>
 </ul>
 
 ## Examples
