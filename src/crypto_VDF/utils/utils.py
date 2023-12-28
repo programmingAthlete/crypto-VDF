@@ -126,7 +126,8 @@ def concat_hexs(*args):
     return int(hex_string2, 16)
 
 
-def flat_shamir_hash(x: int, y: int) -> int:
-    i = bytes.fromhex(get_hex(x)) + bytes.fromhex(get_hex(y))
-    h = hashlib.sha256(i).hexdigest()
+def hash_function(hash_input, truncate_to: int = None) -> int:
+    if truncate_to is None or truncate_to > 256:
+        truncate_to = 256
+    h = hashlib.sha256(hash_input).hexdigest()[-truncate_to // 8 * 2]
     return int(h, 16)
