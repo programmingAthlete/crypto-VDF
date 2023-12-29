@@ -15,14 +15,9 @@ _log = get_logger(__name__)
 class PietrzakVDF(VDF):
 
     @classmethod
-    def setup(cls, security_param, delay):
-        try:
-            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
-            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
-            _log.info(f"[SETUP] Prime numbers p = {resp_p.base_10}, q = {resp_q.base_10}")
-        except PrimeNumberNotFound as exc:
-            raise exc
-        return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay, security_param=security_param)
+    def setup(cls, security_param, delay) -> PublicParams:
+        primes = cls.generate_rsa_primes(security_param)
+        return PublicParams(modulus=primes.q.base_10 * primes.p.base_10, delay=delay, security_param=security_param)
 
     @classmethod
     def gen(cls, public_params):

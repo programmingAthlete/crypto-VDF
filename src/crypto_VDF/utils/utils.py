@@ -117,12 +117,8 @@ def get_hex(x):
 
 
 def concat_hexs(*args):
-    # hexs = [bytes.fromhex(get_hex(item)) for item in args]
-    # hex_string = b''.join(hexs).hex()
-    # a = int(hex_string, 16)
     hexs2 = [get_hex(item) for item in args]
     hex_string2 = ''.join(hexs2)
-    # assert a == int(hex_string2, 16)
     return int(hex_string2, 16)
 
 
