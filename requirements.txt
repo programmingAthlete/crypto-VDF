@@ -1,3 +1,4 @@
 typer[all]
 pydantic<2
 orjson>=3.9.10
+sympy>=1.12

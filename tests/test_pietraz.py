@@ -17,7 +17,7 @@ class TestPietrazVDF(unittest.TestCase):
         x = 10
         modulus = 21
 
-        pp = PublicParams(delay=1, modulus=modulus)
+        pp = PublicParams(delay=1, modulus=modulus, security_param=256)
         out = PietrzakVDF.sol(public_params=pp, input_param=x)
         proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
         verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=proof)

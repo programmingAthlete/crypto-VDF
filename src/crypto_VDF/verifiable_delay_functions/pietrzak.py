@@ -6,7 +6,7 @@ from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.prime_numbers import PrimNumbers
-from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular, exp_non_modular, square_sequences
+from crypto_VDF.utils.utils import concat_hexs, hash_function, exp_modular, exp_non_modular, square_sequences, get_hex
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 
 _log = get_logger(__name__)
@@ -22,7 +22,7 @@ class PietrzakVDF(VDF):
             _log.info(f"[SETUP] Prime numbers p = {resp_p.base_10}, q = {resp_q.base_10}")
         except PrimeNumberNotFound as exc:
             raise exc
-        return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay)
+        return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay, security_param=security_param)
 
     @classmethod
     def gen(cls, public_params):
@@ -56,9 +56,10 @@ class PietrzakVDF(VDF):
         t = public_params.delay
         for item in proof:
             exp = exp_non_modular(a=2, exponent=t)
-            h_in = concat_hexs(x_i, exp, y_i)
+            # h_in = concat_hexs(x_i, exp, y_i)
             _log.debug(f"[VERIFY] x_i = {x_i}, y_i:{y_i}")
-            r_i = flat_shamir_hash(x=h_in, y=item)
+            # r_i = hash_function(x=h_in, y=item)
+            r_i = cls.flat_shamir_hash(xi=x_i, exponent=exp, yi=y_i, mui=item, public_params=public_params)
             _log.debug(f"[VERIFY] r_i = {r_i}")
             x_i = NumberTheory.multiply(u=exp_modular(a=x_i, exponent=r_i, n=public_params.modulus), v=item,
                                         n=public_params.modulus)
@@ -73,6 +74,12 @@ class PietrzakVDF(VDF):
     @staticmethod
     def calc_next_step(step: int):
         return step // 2 if step % 2 == 0 else (step + 1) // 2
+
+    @staticmethod
+    def flat_shamir_hash(public_params: PublicParams, xi, exponent, yi, mui):
+        h_in = concat_hexs(int(xi), exponent, int(yi))
+        hash_input = bytes.fromhex(get_hex(h_in)) + bytes.fromhex(get_hex(mui))
+        return hash_function(hash_input=hash_input, truncate_to=public_params.security_param)
 
     @classmethod
     @set_level(logger=_log)
@@ -107,10 +114,11 @@ class PietrzakVDF(VDF):
 
             # mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
-            h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
+            # h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
             # _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i}, x_1: {x_i}, exp_previous: {exp_previous}, y_i:{y_i}")
 
-            r_i = flat_shamir_hash(x=h_in, y=int(mu_i))
+            r_i = cls.flat_shamir_hash(xi=int(x_i), mui=int(mu_i), exponent=exp_previous, yi=y_i,
+                                       public_params=public_params)
             _log.debug(f"[COMPUTE-PROOF] r_i = {r_i}")
 
             # Update x_i any y_i

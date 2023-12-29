@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pydantic
 from pydantic import root_validator
@@ -31,3 +31,4 @@ class GeneratePrimesResponse(pydantic.BaseModel):
 class PublicParams(pydantic.BaseModel):
     delay: int
     modulus: int
+    security_param: Optional[int]
