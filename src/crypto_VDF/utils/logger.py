@@ -14,8 +14,11 @@ def set_level(logger: logging.Logger, level: int = logging.DEBUG):
     def deco(func):
         def wrapper(*args, **kwargs):
             _verbose = kwargs.get('_verbose', None)
-            params = inspect.signature(func).parameters
-            _verbose = next((True for param_name in params if param_name == '_verbose'), None)
+            if _verbose is None:
+                params = inspect.signature(func).parameters
+                default_verbose = params.get('_verbose', {}).default
+                _verbose = next((arg_value for i, arg_value in enumerate(args) if list(params)[i] == '_verbose'),
+                                default_verbose)
             if _verbose is True:
                 logger.setLevel(level)
             return func(*args, **kwargs)
