@@ -3,7 +3,7 @@ from typing import List
 
 from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import PublicParams
-from crypto_VDF.utils.logger import get_logger
+from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.prime_numbers import PrimNumbers
 from crypto_VDF.utils.utils import concat_hexs, flat_shamir_hash, exp_modular, exp_non_modular, square_sequences
@@ -37,15 +37,14 @@ class PietrzakVDF(VDF):
         return square_sequences(steps=delay, a=input_param, n=public_params.modulus)
 
     @classmethod
-    def eval(cls, public_params, input_param, verbose: int = False):
+    def eval(cls, public_params, input_param, verbose: bool = False):
         output = cls.eval_function(public_params=public_params, input_param=input_param)
-        proof = cls.compute_proof(public_params=public_params, input_param=input_param, log=verbose)
+        proof = cls.compute_proof(public_params=public_params, input_param=input_param, _verbose=verbose)
         return output, proof
 
     @classmethod
-    def verify(cls, public_params, input_param, output_param, proof=None, log: bool = False) -> bool:
-        if log is True:
-            _log.setLevel(logging.DEBUG)
+    @set_level(logger=_log)
+    def verify(cls, public_params, input_param, output_param, proof=None, _verbose: bool = False) -> bool:
         if any(NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=item) is False for item in
                [input_param, output_param]):
             _log.error("[VERIFY] Not Quadratic residues")
@@ -61,20 +60,10 @@ class PietrzakVDF(VDF):
             _log.debug(f"[VERIFY] x_i = {x_i}, y_i:{y_i}")
             r_i = flat_shamir_hash(x=h_in, y=item)
             _log.debug(f"[VERIFY] r_i = {r_i}")
-            # x_i = NumberTheory.modular_abs(
-            #     (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus,
-            #     public_params.modulus)
-            # y_i = NumberTheory.modular_abs(
-            #     (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus,
-            #     public_params.modulus)
             x_i = NumberTheory.multiply(u=exp_modular(a=x_i, exponent=r_i, n=public_params.modulus), v=item,
                                         n=public_params.modulus)
             y_i = NumberTheory.multiply(u=exp_modular(a=item, exponent=r_i, n=public_params.modulus), v=y_i,
                                         n=public_params.modulus)
-
-            # x_i = (exp_modular(a=x_i, exponent=r_i, n=public_params.modulus) * item) % public_params.modulus
-            # y_i = (exp_modular(a=item, exponent=r_i, n=public_params.modulus) * y_i) % public_params.modulus
-
             _log.debug(f"[VERIFY] x = {x_i} and y = {y_i}\n")
             t = cls.calc_next_step(step=t)
         _log.info(f"[VERIFY] x = {x_i} and y = {y_i}\n")
@@ -86,9 +75,8 @@ class PietrzakVDF(VDF):
         return step // 2 if step % 2 == 0 else (step + 1) // 2
 
     @classmethod
-    def compute_proof(cls, public_params: PublicParams, input_param, log: bool = False) -> List[int]:
-        if log is True:
-            _log.setLevel(logging.DEBUG)
+    @set_level(logger=_log)
+    def compute_proof(cls, public_params: PublicParams, input_param, _verbose: bool = False) -> List[int]:
         x_i = input_param
         t_half = cls.calc_next_step(step=public_params.delay)
         y_half = square_sequences(a=input_param, n=public_params.modulus, steps=t_half)
