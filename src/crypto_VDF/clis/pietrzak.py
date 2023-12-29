@@ -27,7 +27,7 @@ def cmd_full_vdf(
     output, proof = PietrzakVDF.eval(public_params=pp, input_param=x, verbose=verbose)
     print(f"\nGenerated output: {x}")
     print(f"Generated Proof: {proof}\n")
-    verif = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, proof=proof, _verbose=verbose)
+    verif = PietrzakVDF.verify(pp, x, output, proof, verbose)
     print(f"\nVerification: {verif}")
     assert verif
 
