@@ -1,11 +1,8 @@
-import logging
 from typing import List
 
-from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.utils.number_theory import NumberTheory
-from crypto_VDF.utils.prime_numbers import PrimNumbers
 from crypto_VDF.utils.utils import concat_hexs, hash_function, exp_modular, exp_non_modular, square_sequences, get_hex
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 

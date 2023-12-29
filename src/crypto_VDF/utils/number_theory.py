@@ -96,4 +96,3 @@ class NumberTheory:
             r = r_list[0] % r_list[1]
             r_list = [r_list[1], r]
         return u[-2]
-
