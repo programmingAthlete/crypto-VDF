@@ -34,3 +34,8 @@ class NotAQuadraticResidueException(BaseCaseException):
 
 class ValuesDivergenceException(pydantic.PydanticValueError):
     msg_template = "value {base_10} is not equal to the binary of {base_2} instead of {bin_base_10}"
+
+
+class CoPrimeException(BaseCaseException):
+    def __init__(self, name="IntegersAreNotCoPrimes", message="The integers are not co-primes"):
+        super().__init__(name=name, message=message)

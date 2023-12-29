@@ -1,6 +1,6 @@
 import random
 
-from crypto_VDF.custom_errors.custom_exceptions import QuadraticResidueFailed
+from crypto_VDF.custom_errors.custom_exceptions import QuadraticResidueFailed, CoPrimeException
 
 
 class NumberTheory:
@@ -66,3 +66,33 @@ class NumberTheory:
     def multiply(cls, u: int, v: int, n: int):
         x = (u * v) % n
         return NumberTheory.modular_abs(x, n)
+
+    @classmethod
+    def modular_inverse(cls, a: int, n: int) -> int:
+        """
+        Modular inverse of a in modulo n.
+        Find u such that a * u + n * v = 1
+
+        Args:
+            a: integer of which to calculate the modular inverse
+            n: modulus
+        Returns:
+            modular inverse of a in modulo n
+        Raises:
+            Raises CoPrimeException a and n are not co-primes
+        """
+        if cls.gcd(a, n) != 1:
+            raise CoPrimeException(f"Integers {a} and {n} are not co-primes")
+        r_list = [a, n]
+        u = [1, 0]
+        v = [0, 1]
+        while r_list[-1] != 0:
+            # Only store the latests two values of u,v and r's
+            q = r_list[0] // r_list[1]
+            u_value = u[0] - q * u[1]
+            v_value = v[0] - q * v[1]
+            u = [u[1], u_value]
+            v = [v[1], v_value]
+            r = r_list[0] % r_list[1]
+            r_list = [r_list[1], r]
+        return u[-2]

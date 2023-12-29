@@ -23,12 +23,18 @@ class KBitPrimeResponse(pydantic.BaseModel):
         return values
 
 
-class GeneratePrimesResponse(pydantic.BaseModel):
-    p: KBitPrimeResponse
-    q: KBitPrimeResponse
-
-
 class PublicParams(pydantic.BaseModel):
     delay: int
     modulus: int
     security_param: Optional[int]
+
+
+class RsaPrimes(pydantic.BaseModel):
+    p: KBitPrimeResponse
+    q: KBitPrimeResponse
+
+
+class RsaSetup(pydantic.BaseModel):
+    phi: Optional[int]
+    n: int
+    security_param: int

@@ -12,11 +12,11 @@ class TestWesolowski(unittest.TestCase):
         g = 2
         y = 3
 
-        r1 = WesolowskiVDF.flat_shamir_hash(g=g, y=y, public_params=pp)
+        r1 = WesolowskiVDF.flat_shamir_hash(g=g, y=y, security_param=10)
         self.assertTrue(PrimNumbers.robin_miller_test(n=r1))
         self.assertTrue(len(hex(r1)[2:]), pp.security_param // 8 * 2)
 
-        r2 = WesolowskiVDF.flat_shamir_hash(g=g, y=y, public_params=pp)
+        r2 = WesolowskiVDF.flat_shamir_hash(g=g, y=y, security_param=10)
         self.assertTrue(PrimNumbers.robin_miller_test(n=r2))
 
         self.assertEqual(r1, r2)

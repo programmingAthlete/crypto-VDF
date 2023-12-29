@@ -1,11 +1,8 @@
-import logging
 from typing import List
 
-from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.utils.number_theory import NumberTheory
-from crypto_VDF.utils.prime_numbers import PrimNumbers
 from crypto_VDF.utils.utils import concat_hexs, hash_function, exp_modular, exp_non_modular, square_sequences, get_hex
 from crypto_VDF.verifiable_delay_functions.vdf import VDF
 
@@ -15,14 +12,9 @@ _log = get_logger(__name__)
 class PietrzakVDF(VDF):
 
     @classmethod
-    def setup(cls, security_param, delay):
-        try:
-            resp_q = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
-            resp_p = PrimNumbers.k_bit_prim_number(security_param // 2, t=100000)
-            _log.info(f"[SETUP] Prime numbers p = {resp_p.base_10}, q = {resp_q.base_10}")
-        except PrimeNumberNotFound as exc:
-            raise exc
-        return PublicParams(modulus=resp_q.base_10 * resp_p.base_10, delay=delay, security_param=security_param)
+    def setup(cls, security_param, delay) -> PublicParams:
+        primes = cls.generate_rsa_primes(security_param)
+        return PublicParams(modulus=primes.q.base_10 * primes.p.base_10, delay=delay, security_param=security_param)
 
     @classmethod
     def gen(cls, public_params):
