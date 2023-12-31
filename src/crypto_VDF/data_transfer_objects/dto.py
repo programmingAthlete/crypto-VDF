@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pydantic
 from pydantic import root_validator
@@ -23,10 +23,13 @@ class KBitPrimeResponse(pydantic.BaseModel):
         return values
 
 
-class PublicParams(pydantic.BaseModel):
+class BaseSetup(pydantic.BaseModel):
     delay: int
-    modulus: int
     security_param: Optional[int]
+
+
+class PublicParams(BaseSetup):
+    modulus: int
 
 
 class RsaPrimes(pydantic.BaseModel):
@@ -34,7 +37,11 @@ class RsaPrimes(pydantic.BaseModel):
     q: KBitPrimeResponse
 
 
-class RsaSetup(pydantic.BaseModel):
+class RsaSetup(BaseSetup):
     phi: Optional[int]
     n: int
-    security_param: int
+
+
+class EvalResponse(pydantic.BaseModel):
+    output: int
+    proof: Union[List[int], int]

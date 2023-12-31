@@ -17,13 +17,13 @@ def cmd_full_vdf(
         security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
         verbose: Annotated[bool, typer.Option(help="Show Debug logs")] = False,
 ):
-    pp = WesolowskiVDF.key_gen(security_param=security_parameter, ret_sk=True)
+    pp = WesolowskiVDF.setup(security_param=security_parameter, ret_sk=True, delay=delay)
     print(f"Public parameters: {orjson.loads(pp.json())}\n")
     x = WesolowskiVDF.gen(pp)
     print(f"\nGenerated input: {x}\n")
-    output, proof = WesolowskiVDF.eval(setup=pp, input_param=x, delay=delay)
-    print(f"\nGenerated output: {output}")
-    print(f"Generated Proof: {proof}\n")
-    verif = WesolowskiVDF.verify(pp, x, output, proof, verbose)
+    evaluation = WesolowskiVDF.eval(setup=pp, input_param=x, _verbose=verbose)
+    print(f"\nGenerated output: {evaluation.output}")
+    print(f"Generated Proof: {evaluation.proof}\n")
+    verif = WesolowskiVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose)
     print(f"\nVerification: {verif}")
     assert verif

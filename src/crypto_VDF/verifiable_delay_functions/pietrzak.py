@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Tuple
 
-from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.data_transfer_objects.dto import PublicParams, EvalResponse
 from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.utils.utils import concat_hexs, hash_function, exp_modular, exp_non_modular, square_sequences, get_hex
@@ -12,7 +12,7 @@ _log = get_logger(__name__)
 class PietrzakVDF(VDF):
 
     @classmethod
-    def setup(cls, security_param, delay) -> PublicParams:
+    def setup(cls, security_param: int, delay: int) -> PublicParams:
         primes = cls.generate_rsa_primes(security_param)
         return PublicParams(modulus=primes.q.base_10 * primes.p.base_10, delay=delay, security_param=security_param)
 
@@ -29,14 +29,13 @@ class PietrzakVDF(VDF):
         return square_sequences(steps=delay, a=input_param, n=public_params.modulus)
 
     @classmethod
-    def eval(cls, public_params, input_param, verbose: bool = False):
-        output = cls.eval_function(public_params=public_params, input_param=input_param)
-        proof = cls.compute_proof(public_params=public_params, input_param=input_param, _verbose=verbose)
-        return output, proof
+    def eval(cls, public_params, input_param, _verbose: bool = False) -> EvalResponse:
+        output, proof = cls.compute_proof(public_params=public_params, input_param=input_param, _verbose=_verbose)
+        return EvalResponse(output=output, proof=proof)
 
     @classmethod
     @set_level(logger=_log)
-    def verify(cls, public_params, input_param, output_param, proof=None, _verbose: bool = False) -> bool:
+    def verify(cls, public_params, input_param, output_param, proof: List[int], _verbose: bool = False) -> bool:
         if any(NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=item) is False for item in
                [input_param, output_param]):
             _log.error("[VERIFY] Not Quadratic residues")
@@ -75,7 +74,7 @@ class PietrzakVDF(VDF):
 
     @classmethod
     @set_level(logger=_log)
-    def compute_proof(cls, public_params: PublicParams, input_param, _verbose: bool = False) -> List[int]:
+    def compute_proof(cls, public_params: PublicParams, input_param, _verbose: bool = False) -> Tuple[int, List[int]]:
         x_i = input_param
         t_half = cls.calc_next_step(step=public_params.delay)
         y_half = square_sequences(a=input_param, n=public_params.modulus, steps=t_half)
@@ -123,7 +122,7 @@ class PietrzakVDF(VDF):
             mu.append(mu_i)
             i += 1
         _log.info(f"[COMPUTE-PROOF] Proof: {mu}")
-        return mu
+        return y, mu
 
 
 if __name__ == '__main__':
