@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, List
+from typing import Union, List
 
 from crypto_VDF.custom_errors.custom_exceptions import PrimeNumberNotFound
 from crypto_VDF.data_transfer_objects.dto import PublicParams, RsaPrimes, RsaSetup, EvalResponse

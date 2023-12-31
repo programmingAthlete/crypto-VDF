@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from crypto_VDF.custom_errors.custom_exceptions import CoPrimeException
 from crypto_VDF.data_transfer_objects.dto import RsaSetup, EvalResponse
 from crypto_VDF.utils.logger import set_level, get_logger
