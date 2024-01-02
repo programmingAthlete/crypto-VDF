@@ -24,10 +24,10 @@ def cmd_full_vdf(
     print(f"Public parameters: {orjson.loads(pp.json())}\n")
     x = PietrzakVDF.gen(pp)
     print(f"\nGenerated input: {x}\n")
-    output, proof = PietrzakVDF.eval(public_params=pp, input_param=x, verbose=verbose)
-    print(f"\nGenerated output: {x}")
-    print(f"Generated Proof: {proof}\n")
-    verif = PietrzakVDF.verify(pp, x, output, proof, verbose)
+    evaluation = PietrzakVDF.eval(public_params=pp, input_param=x, _verbose=verbose)
+    print(f"\nGenerated output: {evaluation.output}")
+    print(f"Generated Proof: {evaluation.proof}\n")
+    verif = PietrzakVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose)
     print(f"\nVerification: {verif}")
     assert verif
 
@@ -40,9 +40,8 @@ def cmd_generate_and_verify(x: Annotated[int, typer.Argument(help="Input to the 
                             verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False):
     pp = PublicParams(modulus=modulus, delay=delay)
     print(f"\nGenerated the public parameters: {orjson.loads(pp.json())}\n")
-    output = PietrzakVDF.sol(input_param=x, public_params=pp)
+    output, proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, _verbose=verbose)
     print(f"\nProduced the output {output}\n")
-    proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x, _verbose=verbose)
     print(f"\nProduced the proof: {proof}\n")
     verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=output, _verbose=verbose,
                                       proof=proof)
