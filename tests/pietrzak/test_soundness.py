@@ -25,7 +25,7 @@ class TestPietrazSoundness(unittest.TestCase):
         x = 10
 
         pp = PublicParams(delay=604, modulus=modulus)
-        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
+        output, proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
         # Run the verification with a fake proof
         verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=11, proof=proof)
         # Check that the verification returns False
