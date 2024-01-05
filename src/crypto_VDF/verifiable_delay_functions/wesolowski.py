@@ -23,9 +23,11 @@ class WesolowskiVDF(VDF):
             return RsaSetup(n=p * q, security_param=security_param, delay=delay)
 
     @classmethod
-    def trapdoor(cls, input_param: int, setup: RsaSetup, delay: int):
-        exp = exp_non_modular(a=2, exponent=delay) % setup.phi
-        return exp_modular(a=input_param, exponent=exp, n=setup.n)
+    def trapdoor(cls, input_param: int, setup: RsaSetup) -> EvalResponse:
+        exp = exp_non_modular(a=2, exponent=setup.delay) % setup.phi
+        y = exp_modular(a=input_param, exponent=exp, n=setup.n)
+        proof = cls.compute_proof(setup=setup, input_param=input_param, output_param=y, delay=setup.delay)
+        return EvalResponse(output=y, proof=proof)
 
     @staticmethod
     def gen(setup: RsaSetup):
