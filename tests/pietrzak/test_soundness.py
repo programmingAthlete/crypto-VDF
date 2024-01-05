@@ -17,9 +17,10 @@ class TestPietrazSoundness(unittest.TestCase):
     
     def test_fake_proof_verification(self):
         modulus = 21
-        x = 10
+        x = 10000
         pp = PublicParams(delay=604, modulus=modulus)
         
+        x_list = [10, 100, 500, 2000, 10000]
         # out = PietrzakVDF.sol(public_params=pp, input_param=x)
         # proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
         # fake_proof = [1 for _ in proof]
@@ -31,30 +32,62 @@ class TestPietrazSoundness(unittest.TestCase):
         # Add test cases here
         # Test with different input values and fake proofs
 
-        out = PietrzakVDF.sol(public_params=pp, input_param=x)
-        proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
-            # Test with a fake proof (all elements set to 1)
-        fake_proof = [1 for _ in proof]
-            # Run the verification with a fake proof
-        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=out, proof=fake_proof)
-            # Check that the verification returns False
-        self.assertFalse(verification, f"Failed for input {x} with fake proof")
+        print('\nTests with fake proof, all elements set to 1\n')
+        for xi in x_list:
+            out = PietrzakVDF.sol(public_params=pp, input_param=xi)
+            proof = PietrzakVDF.compute_proof(public_params=pp, input_param=xi)
+                # Test with a fake proof (all elements set to 1)
+            fake_proof = [1 for _ in proof]
+            
+                # Run the verification with a fake proof
+            verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=out, proof=fake_proof)
+                # Check that the verification returns False
+            self.assertFalse(verification, f"Failed for input {xi} with fake proof")
+            
+            
+        ## Fake proof with all elements set to ? (other than 1?)
+        # print('\nTests with fake proof, all elements set to 9\n')
+        # for xi in x_list:
+        #     out = PietrzakVDF.sol(public_params=pp, input_param=xi)
+        #     proof = PietrzakVDF.compute_proof(public_params=pp, input_param=xi)
+        #         # Test with a fake proof (all elements set to 9)
+        #     fake_proof = [9 for _ in proof]
+            
+        #         # Run the verification with a fake proof
+        #     verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=out, proof=fake_proof)
+        #         # Check that the verification returns False
+        #     self.assertFalse(verification, f"Failed for input {xi} with fake proof")
 
 
 
     def test_fake_output(self):
         modulus = 21
-        x = 10
+        x = 10000
         pp = PublicParams(delay=604, modulus=modulus)
         
-        output, proof = PietrzakVDF.compute_proof(public_params=pp, input_param=x)
-        # Run the verification with a fake proof
-        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=11, proof=proof)
-        # Check that the verification returns False
-        self.assertFalse(verification)
+        x_list = [10, 100, 500, 2000, 10000]
+        
+        print('\nTests with fake output, (output_param=11, 200, 1000, 5000)\n')
+        for xi in x_list:
+            output, proof = PietrzakVDF.compute_proof(public_params=pp, input_param=xi)
+            # Run the verification with a fake proof
+            print('\nFake output = 11')
+            verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=11, proof=proof)
+            # Check that the verification returns False
+            self.assertFalse(verification)
+            
+            print('Fake output = 200')
+            verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=200, proof=proof)
+            self.assertFalse(verification)
 
-        verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=1000, proof=proof)
-        self.assertFalse(verification)
+            print('Fake output = 1000')
+            verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=1000, proof=proof)
+            self.assertFalse(verification)
+            
+            print('Fake output = 5000')
+            verification = PietrzakVDF.verify(public_params=pp, input_param=xi, output_param=5000, proof=proof)
+            self.assertFalse(verification)
+            
         
 
         # Add test cases here
