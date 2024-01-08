@@ -33,3 +33,21 @@ def cmd_full_vdf(
     verif = WesolowskiVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose)
     print(f"\nVerification: {verif}")
     assert verif
+
+
+@app.command(name="full-vdf2")
+def cmd_full_vdf2(
+        delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
+        security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
+        verbose: Annotated[bool, typer.Option(help="Show Debug logs")] = False,
+):
+    pp = WesolowskiVDF.setup(security_param=security_parameter, ret_sk=True, delay=delay)
+    print(f"Public parameters: {orjson.loads(pp.json())}\n")
+    x = WesolowskiVDF.gen(pp)
+    print(f"\nGenerated input: {x}\n")
+    evaluation = WesolowskiVDF.eval_2(setup=pp, input_param=x, _verbose=verbose)
+    print(f"\nGenerated output: {evaluation.output}")
+    print(f"Generated Proof: {evaluation.proof}\n")
+    verif = WesolowskiVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose)
+    print(f"\nVerification: {verif}")
+    assert verif
