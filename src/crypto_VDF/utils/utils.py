@@ -1,5 +1,7 @@
 import os
 import hashlib
+from typing import Tuple, List
+
 from crypto_VDF.utils.number_theory import NumberTheory
 
 
@@ -19,6 +21,23 @@ def square_sequences(a: int, steps: int, n: int) -> int:
     for _ in range(steps):
         c = NumberTheory.modular_abs((c * c) % n, n)
     return c
+
+
+def square_sequences_v2(a: int, steps: int, n: int) -> Tuple[int, List[int]]:
+    """
+    Modular exponentiation
+
+    Args:
+        a: number to exponentiate
+        steps: exponent
+        n: modulus
+
+    Returns:
+        a^exponent (mod n)
+    """
+    c = a % n
+    c_list = [NumberTheory.modular_abs((c := c * c % n), n) for _ in range(steps)]
+    return c, c_list
 
 
 def exp_modular(a: int, exponent: int, n: int) -> int:
@@ -140,14 +159,14 @@ def arrange_powers_of_2(start, stop)->[int]:
     result = []
     for i in range(start, stop+1):
         result.append(2**i)
-    
+
     return result
 
 
 def get_current_file_abs_path(file):
     """
     create the absolute path for the file from which this function is called
-    for example: if this function was called from /home/project/file.py it will 
+    for example: if this function was called from /home/project/file.py it will
     return /home/project/file.py
     Args:
         file: the <<__file__>> global variable that each module (.py file) has.
