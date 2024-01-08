@@ -32,7 +32,6 @@ class WesolowskiVDF(VDF):
         r = y % prime_l
         q = ((y-r) // prime_l) % setup.phi
         proof = exp_modular(a=input_param, exponent=q, n=setup.n)
-        # proof = cls.compute_proof(setup=setup, input_param=input_param, output_param=y, delay=setup.delay)
         return EvalResponse(output=y, proof=proof)
 
     @staticmethod
@@ -80,7 +79,6 @@ class WesolowskiVDF(VDF):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
         bs = cls.alg_4(prime_l=prime_l, delay=setup.delay)
-
         proof = 1
         for i in range(len(output_list)):
             if bs[i] == 1:
