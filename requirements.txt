@@ -1,7 +1,6 @@
 click==8.1.7
 colorama==0.4.6
 contourpy==1.2.0
--e git+https://github.com/programmingAthlete/crypto-VDF@d31519493d80ed2c589cc9142242bdae2b73ee6a#egg=crypto_VDF
 cycler==0.12.1
 exceptiongroup==1.2.0
 flake8==6.1.0
