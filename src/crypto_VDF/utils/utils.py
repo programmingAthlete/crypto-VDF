@@ -1,5 +1,5 @@
+import os
 import hashlib
-
 from crypto_VDF.utils.number_theory import NumberTheory
 
 
@@ -127,3 +127,45 @@ def hash_function(hash_input, truncate_to: int = None) -> int:
         truncate_to = 256
     h = hashlib.sha256(hash_input).hexdigest()[-truncate_to // 8 * 2]
     return int(h, 16)
+
+def arrange_powers_of_2(start, stop)->[int]:
+    """
+    creates a list of integers with values that are powers of two
+
+    Args:
+        start, stop: which number to start counting for powers of two and at which number to stop. (i.e range)
+    Returns:
+        List of Integers that are powers of two
+    """
+    result = []
+    for i in range(start, stop+1):
+        result.append(2**i)
+    
+    return result
+
+
+def get_current_file_abs_path(file):
+    """
+    create the absolute path for the file from which this function is called
+    for example: if this function was called from /home/project/file.py it will 
+    return /home/project/file.py
+    Args:
+        file: the <<__file__>> global variable that each module (.py file) has.
+    Returns:
+        the absolute path to file from which this function was called
+    """
+    return os.path.realpath(file)
+
+
+def create_path_to_data_folder(dataFolderName="data"):
+    return os.path.join(
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.dirname(
+                                get_current_file_abs_path(__file__)
+                                )
+                            )
+                        )
+                    )
+                , dataFolderName)
