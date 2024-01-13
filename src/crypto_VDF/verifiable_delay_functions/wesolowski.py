@@ -72,13 +72,13 @@ class WesolowskiVDF(VDF):
     @classmethod
     @set_level(logger=_log)
     def eval(cls, setup: RsaSetup, input_param, _verbose: bool = False) -> EvalResponse:
-        y = square_sequences(steps=setup.delay, a=input_param, n=setup.n)
+        y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
         _log.info(f"[EVALUATION] VDF output: {y}")
-        if not NumberTheory.gcd(a=y, b=setup.n) == 1:
-            raise CoPrimeException(message=f"Output y = {y} id not invertible in Z{setup.n}")
-        proof = cls.compute_proof(setup=setup, input_param=input_param, output_param=y, delay=setup.delay)
-        _log.info(f"[EVALUATION] VDF proof: {y}")
-        return EvalResponse(output=y, proof=proof)
+        if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
+            raise CoPrimeException(message=f"Output y = {y[0]} is not invertible in Z{setup.n}")
+        proof = cls.compute_proof(setup=setup, input_param=input_param, output_param=y[0], delay=setup.delay)
+        _log.info(f"[EVALUATION] VDF proof: {proof}")
+        return EvalResponse(output=y[0], proof=proof)
 
     @classmethod
     @set_level(logger=_log)
@@ -87,19 +87,20 @@ class WesolowskiVDF(VDF):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
         exp = exp_non_modular(a=2, exponent=delay)
-        return exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
+        a = exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
+        return a
 
     @classmethod
     def alg_4(cls, n: int, prime_l: int, delay: int, output_list):
         _log.info("Starting Alg 4")
         r = 1
-        proof = 1
+        proof_l = []
         for i in range(delay):
             b = (2 * r) // prime_l
             r = (2 * r) % prime_l
             if b == 1:
-                proof = (proof * output_list[delay - i - 1]) % n
-        # product = reduce(lambda x, y: (x * y) % setup.n, proof)
+                proof_l.append(output_list[delay - i - 1])
+        proof = reduce(lambda x, y: (x * y) % n, proof_l)
         return proof
 
     @staticmethod
@@ -122,8 +123,12 @@ class WesolowskiVDF(VDF):
     def verify(cls, setup: RsaSetup, input_param: int, output_param: int, proof: int, _verbose: bool = False):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[VERIFY] Generated prime l from flat_shamir_hash: {prime_l}")
-        r = exp_modular(a=2, exponent=setup.delay, n=setup.n)
+        r = exp_modular(a=2, exponent=setup.delay, n=prime_l)
         _log.debug(f"[VERIFY] Value of r = 2^T % n: {r}")
+        v = (exp_modular(a=proof, exponent=prime_l, n=setup.n) * exp_modular(a=input_param, exponent=r,
+                                                                             n=setup.n)) % setup.n
+        print(v)
+        print(output_param)
         if (exp_modular(a=proof, exponent=prime_l, n=setup.n) * exp_modular(a=input_param, exponent=r,
                                                                             n=setup.n)) % setup.n == output_param:
             return True
