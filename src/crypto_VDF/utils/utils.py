@@ -36,8 +36,11 @@ def square_sequences_v2(a: int, steps: int, n: int) -> Tuple[int, List[int]]:
         a^exponent (mod n)
     """
     c = a % n
-    c_list = [NumberTheory.modular_abs((c := c * c % n), n) for _ in range(steps)]
-    return c, c_list
+    cs = [c]
+    for _ in range(steps):
+        c = (c * c) % n
+        cs.append(c)
+    return c, cs
 
 
 def exp_modular(a: int, exponent: int, n: int) -> int:
@@ -52,6 +55,8 @@ def exp_modular(a: int, exponent: int, n: int) -> int:
     Returns:
         a^exponent (mod n)
     """
+    if exponent == 0:
+        return 1 % n
     exp = [int(item) for item in bin(exponent)[2:]]
     c = a
     for i in range(1, len(exp)):

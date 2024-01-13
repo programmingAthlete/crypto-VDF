@@ -16,6 +16,22 @@ _log = get_logger(__name__)
 
 class WesolowskiVDF(VDF):
 
+    @staticmethod
+    def alg_4_base(delay, prime_l, input_var, n):
+        rs = []
+        x = 1
+        r = 1
+        bs = []
+
+        for _ in range(delay):
+            b = (2 * r) // prime_l
+            r = (2 * r) % prime_l
+            bs.append(b)
+            x = (exp_modular(a=x, exponent=2, n=n) * exp_modular(a=input_var, exponent=b, n=n)) % n
+
+            rs.append(r)
+        return x, bs, rs
+
     @classmethod
     def setup(cls, security_param: int, delay: int, ret_sk: bool = False) -> RsaSetup:
         primes = cls.generate_rsa_primes(security_param=security_param)
@@ -74,13 +90,17 @@ class WesolowskiVDF(VDF):
         return exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
 
     @classmethod
-    def alg_4(cls, setup: RsaSetup, prime_l: int, delay: int, output_list):
+    def alg_4(cls, n: int, prime_l: int, delay: int, output_list):
+        _log.info("Starting Alg 4")
         r = 1
-        bs = [2 * (r := 2 * r % prime_l) // prime_l for _ in range(delay)]
-        proof = [cls.compute_contribution(bit_val=bs[i], output_list=output_list, idx=i, delay=delay) for i in
-                 range(delay)]
-        product = reduce(lambda x, y: (x * y) % setup.n, proof)
-        return product
+        proof = 1
+        for i in range(delay):
+            b = (2 * r) // prime_l
+            r = (2 * r) % prime_l
+            if b == 1:
+                proof = (proof * output_list[delay - i - 1]) % n
+        # product = reduce(lambda x, y: (x * y) % setup.n, proof)
+        return proof
 
     @staticmethod
     def compute_contribution(bit_val, output_list, idx, delay):
@@ -94,7 +114,7 @@ class WesolowskiVDF(VDF):
                           output_list: List[int]):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
-        proof = cls.alg_4(setup=setup, prime_l=prime_l, delay=setup.delay, output_list=output_list)
+        proof = cls.alg_4(n=setup.n, prime_l=prime_l, delay=setup.delay, output_list=output_list)
         return proof
 
     @classmethod
@@ -104,7 +124,8 @@ class WesolowskiVDF(VDF):
         _log.debug(f"[VERIFY] Generated prime l from flat_shamir_hash: {prime_l}")
         r = exp_modular(a=2, exponent=setup.delay, n=setup.n)
         _log.debug(f"[VERIFY] Value of r = 2^T % n: {r}")
-        if exp_modular(a=proof, exponent=prime_l, n=setup.n) * exp_modular(a=input_param, exponent=r, n=setup.n):
+        if (exp_modular(a=proof, exponent=prime_l, n=setup.n) * exp_modular(a=input_param, exponent=r,
+                                                                            n=setup.n)) % setup.n == output_param:
             return True
         else:
             return False
