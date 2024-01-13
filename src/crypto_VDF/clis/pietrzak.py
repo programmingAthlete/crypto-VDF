@@ -24,10 +24,10 @@ def cmd_full_vdf(
     print(f"Public parameters: {orjson.loads(pp.json())}\n")
     x = PietrzakVDF.gen(pp)
     print(f"\nGenerated input: {x}\n")
-    evaluation = PietrzakVDF.eval(public_params=pp, input_param=x, _verbose=verbose)
+    evaluation = PietrzakVDF.eval(public_params=pp, input_param=x, _verbose=verbose, _hide=True)
     print(f"\nGenerated output: {evaluation.output}")
     print(f"Generated Proof: {evaluation.proof}\n")
-    verif = PietrzakVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose)
+    verif = PietrzakVDF.verify(pp, x, evaluation.output, evaluation.proof, verbose, _hide=True)
     print(f"\nVerification: {verif}")
     assert verif
 
