@@ -152,7 +152,8 @@ def hash_function(hash_input, truncate_to: int = None) -> int:
     h = hashlib.sha256(hash_input).hexdigest()[-truncate_to // 8 * 2]
     return int(h, 16)
 
-def arrange_powers_of_2(start, stop)->[int]:
+
+def arrange_powers_of_2(start, stop) -> [int]:
     """
     creates a list of integers with values that are powers of two
 
@@ -162,8 +163,8 @@ def arrange_powers_of_2(start, stop)->[int]:
         List of Integers that are powers of two
     """
     result = []
-    for i in range(start, stop+1):
-        result.append(2**i)
+    for i in range(start, stop + 1):
+        result.append(2 ** i)
 
     return result
 
@@ -183,13 +184,13 @@ def get_current_file_abs_path(file):
 
 def create_path_to_data_folder(dataFolderName="data"):
     return os.path.join(
+        os.path.dirname(
+            os.path.dirname(
                 os.path.dirname(
                     os.path.dirname(
-                        os.path.dirname(
-                            os.path.dirname(
-                                get_current_file_abs_path(__file__)
-                                )
-                            )
-                        )
+                        get_current_file_abs_path(__file__)
                     )
-                , dataFolderName)
+                )
+            )
+        )
+        , dataFolderName)
