@@ -13,7 +13,7 @@ _log = get_logger(__name__)
 
 
 @app.command(name="full-vdf-naive")
-def cmd_full_vdf(
+def cmd_full_naive_vdf(
         delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
         security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
         trapdoor: Annotated[bool, typer.Option(help="Use trapdoor")] = False,
@@ -36,8 +36,8 @@ def cmd_full_vdf(
     assert verif
 
 
-@app.command(name="full-vdf2")
-def cmd_full_vdf2(
+@app.command(name="full-vdf")
+def cmd_full_vdf(
         delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 2,
         security_parameter: Annotated[int, typer.Option(help="Bit lengths of the modulus")] = 10,
         trapdoor: Annotated[bool, typer.Option(help="Use trapdoor")] = False,
