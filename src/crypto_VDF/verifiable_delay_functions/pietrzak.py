@@ -29,13 +29,15 @@ class PietrzakVDF(VDF):
         return square_sequences(steps=delay, a=input_param, n=public_params.modulus)
 
     @classmethod
-    def eval(cls, public_params, input_param, _verbose: bool = False) -> EvalResponse:
-        output, proof = cls.compute_proof(public_params=public_params, input_param=input_param, _verbose=_verbose)
+    def eval(cls, public_params, input_param, _verbose: bool = False, _hide: bool = False) -> EvalResponse:
+        output, proof = cls.compute_proof(public_params=public_params, input_param=input_param, _verbose=_verbose,
+                                          _hide=_hide)
         return EvalResponse(output=output, proof=proof)
 
     @classmethod
     @set_level(logger=_log)
-    def verify(cls, public_params, input_param, output_param, proof: List[int], _verbose: bool = False) -> bool:
+    def verify(cls, public_params, input_param, output_param, proof: List[int], _verbose: bool = False,
+               _hide: bool = False) -> bool:
         if any(NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=item) is False for item in
                [input_param, output_param]):
             _log.error("[VERIFY] Not Quadratic residues")
@@ -74,7 +76,8 @@ class PietrzakVDF(VDF):
 
     @classmethod
     @set_level(logger=_log)
-    def compute_proof(cls, public_params: PublicParams, input_param, _verbose: bool = False) -> Tuple[int, List[int]]:
+    def compute_proof(cls, public_params: PublicParams, input_param, _verbose: bool = False, _hide: bool = False) \
+            -> Tuple[int, List[int]]:
         x_i = input_param
         t_half = cls.calc_next_step(step=public_params.delay)
         y_half = square_sequences(a=input_param, n=public_params.modulus, steps=t_half)
