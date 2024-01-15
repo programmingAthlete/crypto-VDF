@@ -76,16 +76,16 @@ class WesolowskiVDF(VDF):
         y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
         _log.info(f"[EVALUATION] VDF output: {y[0]}")
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
-            raise CoPrimeException(message=f"Output y = {y} id not invertible in Z{setup.n}")
+            raise CoPrimeException(message=f"Output y = {y[0]} id not invertible in Z{setup.n}")
         proof = cls.compute_proof_opt(setup=setup, input_param=input_param, output_param=y[0], output_list=y[1])
-        _log.info(f"[EVALUATION] VDF proof: {y}")
+        _log.info(f"[EVALUATION] VDF proof: {y[0]}")
         return EvalResponse(output=y[0], proof=proof)
 
     @classmethod
     @set_level(logger=_log)
     def eval_naive(cls, setup: RsaSetup, input_param, _verbose: bool = False) -> EvalResponse:
         y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
-        _log.info(f"[EVALUATION] VDF output: {y}")
+        _log.info(f"[EVALUATION] VDF output: {y[0]}")
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
             raise CoPrimeException(message=f"Output y = {y[0]} is not invertible in Z{setup.n}")
         proof = cls.compute_proof_naive(setup=setup, input_param=input_param, output_param=y[0], delay=setup.delay)

@@ -16,7 +16,7 @@ def check_arg_presence(arg: str, args, params, defaults):
     return value
 
 
-def set_level(logger: logging.Logger, level: int = logging.DEBUG):
+def set_level(logger: logging.Logger, level: int = logging.DEBUG, hiding_level: int = logging.ERROR):
     def deco(func):
         def wrapper(*args, **kwargs):
             params = inspect.signature(func).parameters
@@ -30,7 +30,7 @@ def set_level(logger: logging.Logger, level: int = logging.DEBUG):
             if _hide is None:
                 _hide = check_arg_presence(arg='_hide', args=args, params=params, defaults=defaults)
             if _hide is True:
-                logger.setLevel(logging.CRITICAL)
+                logger.setLevel(hiding_level)
             return func(*args, **kwargs)
 
         return wrapper
