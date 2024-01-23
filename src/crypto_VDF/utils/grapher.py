@@ -10,146 +10,155 @@ import os
 
 
 class Grapher:
+    @classmethod
+    def run_vdf_random(cls, pp):
+        x = NumberTheory.generate_quadratic_residue(pp.modulus)
+        return cls.run_vdf(pp=pp, input_pram=x)
 
     @staticmethod
-    def generate_pietrzak_complexity_data(number_of_delays=10, fname=None, delay_repeat=1, randomize_input=False):
+    def run_vdf(pp, input_pram):
+        tOutStart = t()
+        evaluation = PietrzakVDF.eval(public_params=pp, input_param=input_pram, _hide=True)
+        tOutEnd = t() - tOutStart
+
+        # print(f"proof took: {tProofEnd} seconds")
+
+        tVerifStart = t()
+
+        verification = PietrzakVDF.verify(public_params=pp, input_param=input_pram, output_param=evaluation.output,
+                                          proof=evaluation.proof, _hide=True)
+        tVerifEnd = t() - tVerifStart
+        # print(f"verification took: {tVerifEnd} seconds")
+        return tOutEnd, tVerifEnd, input_pram, pp.delay
+
+    @classmethod
+    def generate_pietrzak_complexity_data(cls, number_of_delays=10, delay_repeat=1, fix_input=False):
         data = {"delay": np.asarray([]), "eval time (s)": np.asarray([]),
                 "verify time (s)": np.asarray([]), "input": np.asarray([])}
 
         delays_list = np.array(arrange_powers_of_2(1, number_of_delays))
         print("delays: ", delays_list)
+        print("delay repeat", delay_repeat)
 
-        yTimeEval = np.asarray([])
-        yTimeVerif = np.asarray([])
-        inputs = np.asarray([])
-        counted_delays = np.asanyarray([])
+        time_eval_macro = np.array([0 for _ in range(number_of_delays * delay_repeat)], dtype=np.float64)
+        time_verif_macro = np.array([0 for _ in range(number_of_delays * delay_repeat)], dtype=np.float64)
+        macrostate_inputs = [0 for _ in range(number_of_delays * delay_repeat)]
+        macrostate_counted_delays = np.asanyarray([0 for _ in range(number_of_delays * delay_repeat)])
 
-        for i in delays_list:
+        if fix_input:
 
-            pp = None
-            x = None
+            primes = PietrzakVDF.generate_rsa_primes(256)
+            modulus = primes.q.base_10 * primes.p.base_10
+            x = NumberTheory.generate_quadratic_residue(modulus=modulus)
+            pp = PietrzakVDF.setup(security_param=256, delay=10)
+            results = [cls.run_vdf(pp=pp, input_pram=x) for idx, i in
+                       enumerate(delays_list) for _ in range(delay_repeat)]
+            time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
+            # for i in delays_list:
+            #
+            #     pp = PietrzakVDF.setup(security_param=256, delay=i)
+            #     y_time_eval = np.array([0 for _ in range(delay_repeat)])
+            #     y_time_verif = np.array([0 for _ in range(delay_repeat)])
+            #     inputs = [0 for _ in range(delay_repeat)]
+            #     counted_delays = np.array([0 for _ in range(delay_repeat)])
+            #
+            #     for repeat_time in range(delay_repeat):
+            #         # print(f"output took: {tOutEnd} seconds")
+            #         tOutEnd, tVerifEnd, input_pram, pp.delay = cls.run_vdf(pp=pp, input_pram=x)
+            #         time_eval_macro[i + repeat_time] = tOutEnd
+            #         print(tOutEnd)
+            #         time_verif_macro[i + repeat_time] = tVerifEnd
+            #         breakpoint()
+            #         time_eval_macro[i + repeat_time] = x
+            #         macrostate_counted_delays[i + repeat_time] = pp.delay
 
-            if not randomize_input:
-                pp = PietrzakVDF.setup(security_param=256, delay=i)
-                x = NumberTheory.generate_quadratic_residue(pp.modulus)
+        else:
+            results = [cls.run_vdf_random(pp := PietrzakVDF.setup(security_param=256, delay=i)) for idx, i in enumerate(delays_list) for _ in range(delay_repeat)]
+            time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
-            for repeat_time in range(delay_repeat):
-                if randomize_input:
-                    pp = PietrzakVDF.setup(security_param=256, delay=i)
-                    x = NumberTheory.generate_quadratic_residue(pp.modulus)
+            # for idx,i in enumerate(delays_list):
+            #     pp = PietrzakVDF.setup(security_param=256, delay=i)
+            #     for repeat_time in range(delay_repeat):
+            #         tOutEnd, tVerifEnd, input_pram, pp.delay = cls.run_vdf_random(pp=pp)
+            #         time_eval_macro[idx + repeat_time] = tOutEnd
+            #         time_verif_macro[idx + repeat_time] = tVerifEnd
+            #         macrostate_counted_delays[idx + repeat_time] = pp.delay
+            #         macrostate_inputs[idx + repeat_time] = input_pram
 
-                # print(f"output took: {tOutEnd} seconds")
-
-                tOutStart = t()
-                evaluation = PietrzakVDF.eval(public_params=pp, input_param=x, _hide=True)
-                tOutEnd = t() - tOutStart
-
-                # print(f"proof took: {tProofEnd} seconds")
-                yTimeEval = np.append(yTimeEval, tOutEnd)
-
-                tVerifStart = t()
-
-                verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=evaluation.output,
-                                                  proof=evaluation.proof, _hide=True)
-                tVerifEnd = t() - tVerifStart
-                # print(f"verification took: {tVerifEnd} seconds")
-                yTimeVerif = np.append(yTimeVerif, tVerifEnd)
-
-                inputs = np.append(inputs, x)
-                counted_delays = np.append(counted_delays, i)
-
-        data["eval time (s)"] = yTimeEval
-        data["verify time (s)"] = yTimeVerif
-        data["input"] = inputs
-        data["delay"] = counted_delays
+        data["eval time (s)"] = np.array(time_eval_macro, dtype=np.float64)
+        data["verify time (s)"] = np.array(time_verif_macro, dtype=np.float64)
+        data["input"] = macrostate_counted_delays
+        data["delay"] = macrostate_inputs
         dt = pd.DataFrame(data)
-
-        if fname is not None:
-            dt.to_csv(fname)
         return dt
 
-    @staticmethod
-    def collect_pietrzak_complexity_data(number_of_delays, iterations):
+    @classmethod
+    def store_data(cls, number_of_delays, iterations, data, input_type: str):
         data_path = create_path_to_data_folder()
         pietrzak_path = os.path.join(data_path, "pietrzak")
-        random_input_path = os.path.join(pietrzak_path, "random_input")
-        fixed_input_path = os.path.join(pietrzak_path, "fixed_input")
+        input_path = os.path.join(pietrzak_path, input_type)
+        input_type_path = os.path.join(pietrzak_path, input_type)
 
         # create the directories for data
         if not os.path.exists(pietrzak_path):
             os.mkdir(pietrzak_path)
-        if not os.path.exists(random_input_path):
-            os.mkdir(random_input_path)
-        if not os.path.exists(fixed_input_path):
-            os.mkdir(fixed_input_path)
+        if not os.path.exists(input_path):
+            os.mkdir(input_path)
 
-        fixed_input_file_name = f"fixed_input_2_to_power_{number_of_delays}_repeated_{iterations}_times.csv"
-        fixed_input_file_path = os.path.join(fixed_input_path, fixed_input_file_name)
-        fixed_input_figure_name = f"fixed_input_data_mean_over_{iterations}_iterations_and_up_to_2_to_power_of_{number_of_delays}"
-        fixed_input_figure_path = os.path.join(fixed_input_path, fixed_input_figure_name)
-        fixed_input_data = Grapher.generate_pietrzak_complexity_data(number_of_delays=number_of_delays,
-                                                                     fname=fixed_input_file_path,
-                                                                     delay_repeat=iterations,
-                                                                     randomize_input=False)
+        input_file_name = f"{input_type}_2_to_power_{number_of_delays}_repeated_{iterations}_times.csv"
+        file_path = os.path.join(input_type_path, input_file_name)
+        figure_name = f"{input_type}_data_mean_over_{iterations}_iterations_and_up_to_2_to_power_of_{number_of_delays}"
+        figure_path = os.path.join(input_type_path, figure_name)
+        if figure_name is not None:
+            data.to_csv(file_path)
+        return figure_path
 
-        random_input_file_name = f"random_input_2_to_power_{number_of_delays}_repeated_{iterations}_times.csv"
-        random_input_file_path = os.path.join(random_input_path, random_input_file_name)
-        random_input_figure_name = f"random_input_data_mean_over_{iterations}_iterations_and_up_to_2_to_power_of_{number_of_delays}"
-        random_input_figure_path = os.path.join(random_input_path, random_input_figure_name)
-        random_input_data = Grapher.generate_pietrzak_complexity_data(number_of_delays=number_of_delays,
-                                                                      fname=random_input_file_path,
-                                                                      delay_repeat=iterations,
-                                                                      randomize_input=True)
+    @classmethod
+    def collect_pietrzak_complexity_data(cls, number_of_delays, iterations, fix_input: bool = False):
+        if fix_input:
+            data = Grapher.generate_pietrzak_complexity_data(number_of_delays=number_of_delays,
+                                                             delay_repeat=iterations,
+                                                             fix_input=True)
+            plot_file_name = cls.store_data(number_of_delays=number_of_delays, iterations=iterations,
+                                            data=data, input_type='fixed_input')
+        else:
+            data = Grapher.generate_pietrzak_complexity_data(number_of_delays=number_of_delays,
+                                                             delay_repeat=iterations,
+                                                             fix_input=False)
+            plot_file_name = cls.store_data(number_of_delays=number_of_delays, iterations=iterations,
+                                            data=data, input_type="random_input")
 
-        fixed_input_eval_time_means = np.asarray([])
-        fixed_input_verify_time_means = np.asarray([])
-
-        random_input_eval_time_means = np.asarray([])
-        random_input_verify_time_means = np.asarray([])
+        eval_time_means = np.asarray([])
+        verify_time_means = np.asarray([])
         delays_list = np.array(arrange_powers_of_2(1, number_of_delays))
 
         for delay in delays_list:
-            fixed_input_eval_time_means = np.append(fixed_input_eval_time_means,
-                                                    fixed_input_data.loc[fixed_input_data['delay'] == delay][
-                                                        'eval time (s)'].sum() / iterations)
-            fixed_input_verify_time_means = np.append(fixed_input_verify_time_means,
-                                                      fixed_input_data.loc[fixed_input_data['delay'] == delay][
-                                                          'verify time (s)'].sum() / iterations)
+            eval_time_means = np.append(eval_time_means,
+                                        data.loc[data['delay'] == delay][
+                                            'eval time (s)'].sum() / iterations)
+            verify_time_means = np.append(verify_time_means,
+                                          data.loc[data['delay'] == delay][
+                                              'verify time (s)'].sum() / iterations)
 
-            random_input_eval_time_means = np.append(random_input_eval_time_means,
-                                                     random_input_data.loc[random_input_data['delay'] == delay][
-                                                         'eval time (s)'].sum() / iterations)
-            random_input_verify_time_means = np.append(random_input_verify_time_means,
-                                                       random_input_data.loc[random_input_data['delay'] == delay][
-                                                           'verify time (s)'].sum() / iterations)
+        d = data['input'].unique()
+        if len(d) != len(delays_list):
+            d = [0 for _ in range(len(delays_list))]
+        input_data = pd.DataFrame(
+            {"delay": delays_list, f"eval time means for {iterations} iterations (s)": eval_time_means,
+             f"verify time means for {iterations} iterations (s)": verify_time_means,
+             "input": d})
 
-        fixed_input_data = pd.DataFrame(
-            {"delay": delays_list, f"eval time means for {iterations} iterations (s)": random_input_eval_time_means,
-             f"verify time means for {iterations} iterations (s)": fixed_input_verify_time_means,
-             "input": fixed_input_data['input'].unique()})
-
-        random_input_data = pd.DataFrame({"delay": delays_list,
-                                          f"eval time means for {iterations} iterations (s)": random_input_eval_time_means,
-                                          f"verify time means for {iterations} iterations (s)": random_input_verify_time_means})
 
         title = f"Pietrzak VDF complexity (mean after {iterations} iterations)"
 
         Grapher.plot_data(
-            data=fixed_input_data,
+            data=input_data,
             iterations=iterations,
             title=title,
-            fname=fixed_input_figure_path
+            fname=plot_file_name
         )
 
-        Grapher.plot_data(
-            data=random_input_data,
-            iterations=iterations,
-            title=title,
-            fname=random_input_figure_path
-
-        )
-
-        return {"fixed_input_data": fixed_input_data, "random_input_data": random_input_data}
+        return {"plotted_data": input_data}
 
     @staticmethod
     def plot_data(data, iterations, title, fname=None):
@@ -174,9 +183,8 @@ class Grapher:
             plt.show()
 
 
-s = t()
-result = Grapher.collect_pietrzak_complexity_data(20, 10)
-print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
-print(result)
-print(result['fixed_input_data'])
-print(result['random_input_data'])
+if __name__ == '__main__':
+    s = t()
+    result = Grapher.collect_pietrzak_complexity_data(20, 10)
+    print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
+    print(result)

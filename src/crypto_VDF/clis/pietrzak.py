@@ -1,3 +1,4 @@
+from time import strftime, gmtime
 from typing import Annotated
 
 import typer
@@ -5,9 +6,11 @@ from orjson import orjson
 
 from crypto_VDF.custom_errors.custom_exceptions import NotAQuadraticResidueException
 from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.utils.grapher import Grapher
 from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
+from time import time as t
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
 
@@ -109,3 +112,15 @@ def cmd_eval_function(x: int, delay: int = 100, modulus: int = 100):
     pp = PublicParams(delay=delay, modulus=modulus)
     y = PietrzakVDF.eval_function(public_params=pp, input_param=x)
     print("Output of Eval:", y)
+
+
+@app.command(name="plots")
+def cmd_complexity_plots(
+        max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
+        iterations: Annotated[int, typer.Argument(help="Number of iterations")] = 2,
+        fix_input: Annotated[bool, typer.Option(help="Number of iterations")] = False,
+):
+    s = t()
+    result = Grapher.collect_pietrzak_complexity_data(number_of_delays=max_delay_exp, iterations=iterations,
+                                                      fix_input=fix_input)
+    print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
