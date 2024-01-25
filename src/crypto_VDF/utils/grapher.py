@@ -1,4 +1,8 @@
+from typing import Dict
+
 from matplotlib import pyplot as plt
+
+from crypto_VDF.data_transfer_objects.dto import PublicParams
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
 from crypto_VDF.utils.number_theory import NumberTheory
 from time import time as t
@@ -11,12 +15,12 @@ import os
 
 class Grapher:
     @classmethod
-    def run_vdf_random(cls, pp):
+    def run_vdf_random(cls, pp: PublicParams):
         x = NumberTheory.generate_quadratic_residue(pp.modulus)
         return cls.run_vdf(pp=pp, input_pram=x)
 
     @staticmethod
-    def run_vdf(pp, input_pram):
+    def run_vdf(pp: PublicParams, input_pram: int):
         tOutStart = t()
         evaluation = PietrzakVDF.eval(public_params=pp, input_param=input_pram, _hide=True)
         tOutEnd = t() - tOutStart
@@ -28,11 +32,13 @@ class Grapher:
         verification = PietrzakVDF.verify(public_params=pp, input_param=input_pram, output_param=evaluation.output,
                                           proof=evaluation.proof, _hide=True)
         tVerifEnd = t() - tVerifStart
+        assert verification is True
         # print(f"verification took: {tVerifEnd} seconds")
         return tOutEnd, tVerifEnd, input_pram, pp.delay
 
     @classmethod
-    def generate_pietrzak_complexity_data(cls, number_of_delays=10, delay_repeat=1, fix_input=False):
+    def generate_pietrzak_complexity_data(cls, number_of_delays: int = 10, delay_repeat: int = 1,
+                                          fix_input=False) -> pd.DataFrame:
         data = {"delay": np.asarray([]), "eval time (s)": np.asarray([]),
                 "verify time (s)": np.asarray([]), "input": np.asarray([])}
 
@@ -40,20 +46,17 @@ class Grapher:
         print("delays: ", delays_list)
         print("delay repeat", delay_repeat)
 
-        time_eval_macro = np.array([0 for _ in range(number_of_delays * delay_repeat)], dtype=np.float64)
-        time_verif_macro = np.array([0 for _ in range(number_of_delays * delay_repeat)], dtype=np.float64)
-        macrostate_inputs = [0 for _ in range(number_of_delays * delay_repeat)]
-        macrostate_counted_delays = np.asanyarray([0 for _ in range(number_of_delays * delay_repeat)])
-
         if fix_input:
 
             primes = PietrzakVDF.generate_rsa_primes(256)
             modulus = primes.q.base_10 * primes.p.base_10
             x = NumberTheory.generate_quadratic_residue(modulus=modulus)
-            pp = PietrzakVDF.setup(security_param=256, delay=10)
-            results = [cls.run_vdf(pp=pp, input_pram=x) for idx, i in
+            results = [cls.run_vdf(pp := PietrzakVDF.setup(security_param=256, delay=i), input_pram=x) for idx, i in
                        enumerate(delays_list) for _ in range(delay_repeat)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
+            # results = [cls.run_vdf(pp=pp, input_pram=x) for idx, i in
+            #            enumerate(delays_list) for _ in range(delay_repeat)]
+            # time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
             # for i in delays_list:
             #
             #     pp = PietrzakVDF.setup(security_param=256, delay=i)
@@ -73,7 +76,8 @@ class Grapher:
             #         macrostate_counted_delays[i + repeat_time] = pp.delay
 
         else:
-            results = [cls.run_vdf_random(pp := PietrzakVDF.setup(security_param=256, delay=i)) for idx, i in enumerate(delays_list) for _ in range(delay_repeat)]
+            results = [cls.run_vdf_random(pp := PietrzakVDF.setup(security_param=256, delay=i)) for idx, i in
+                       enumerate(delays_list) for _ in range(delay_repeat)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
             # for idx,i in enumerate(delays_list):
@@ -93,7 +97,7 @@ class Grapher:
         return dt
 
     @classmethod
-    def store_data(cls, number_of_delays, iterations, data, input_type: str):
+    def store_data(cls, number_of_delays: int, iterations: int, data: pd.DataFrame, input_type: str) -> str:
         data_path = create_path_to_data_folder()
         pietrzak_path = os.path.join(data_path, "pietrzak")
         input_path = os.path.join(pietrzak_path, input_type)
@@ -114,7 +118,8 @@ class Grapher:
         return figure_path
 
     @classmethod
-    def collect_pietrzak_complexity_data(cls, number_of_delays, iterations, fix_input: bool = False):
+    def collect_pietrzak_complexity_data(cls, number_of_delays: int, iterations: int, fix_input: bool = False) -> \
+            Dict[str, pd.DataFrame]:
         if fix_input:
             data = Grapher.generate_pietrzak_complexity_data(number_of_delays=number_of_delays,
                                                              delay_repeat=iterations,
@@ -147,7 +152,6 @@ class Grapher:
             {"delay": delays_list, f"eval time means for {iterations} iterations (s)": eval_time_means,
              f"verify time means for {iterations} iterations (s)": verify_time_means,
              "input": d})
-
 
         title = f"Pietrzak VDF complexity (mean after {iterations} iterations)"
 

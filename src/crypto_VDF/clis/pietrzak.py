@@ -117,7 +117,7 @@ def cmd_eval_function(x: int, delay: int = 100, modulus: int = 100):
 @app.command(name="plots")
 def cmd_complexity_plots(
         max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
-        iterations: Annotated[int, typer.Argument(help="Number of iterations")] = 2,
+        iterations: Annotated[int, typer.Argument(help="Number of iterations")] = 10,
         fix_input: Annotated[bool, typer.Option(help="Number of iterations")] = False,
 ):
     s = t()
