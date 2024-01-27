@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,18 +34,20 @@ class Grapher:
         return plt
 
     @staticmethod
-    def get_paths(delay_sub_dir: str, iterations: int, input_type: InputType, vdf_name: VDFName) -> GetPaths:
+    def create_directories(directories: List[Path]) -> None:
+        for directory in directories:
+            directory.mkdir(exist_ok=True)
+
+    @classmethod
+    def get_paths(cls, delay_sub_dir: str, iterations: int, input_type: InputType, vdf_name: VDFName) -> GetPaths:
         data_path = create_path_to_data_folder_v2()
         vdf_path = data_path / str(vdf_name.value)
         input_path = vdf_path / str(input_type.value)
         input_type_path = vdf_path / str(input_type.value)
+        sub_dir = input_type_path / delay_sub_dir
 
         # create the directories for data
-        vdf_path.mkdir(exist_ok=True)
-        input_path.mkdir(exist_ok=True)
-        # _2_to_power_{number_of_delays}
-        sub_dir = input_type_path / delay_sub_dir
-        sub_dir.mkdir(exist_ok=True)
+        cls.create_directories([vdf_path, input_path, sub_dir])
 
         input_file_name = f"repeated_{iterations}_times.csv"
         macrostate_input_file = f"macrostate_repeated_{iterations}_times.csv"
