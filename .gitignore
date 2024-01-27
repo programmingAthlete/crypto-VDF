@@ -9,3 +9,4 @@ crypto_VDF.egg-info
 **/__pycache__/
 
 data/pietrzak/*
+data/wesolowski/*

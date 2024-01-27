@@ -55,24 +55,38 @@ class WesolowskiVDF(VDF):
         return EvalResponse(output=y, proof=proof)
 
     @staticmethod
-    def gen(setup: RsaSetup):
-        numb = random.randint(2, setup.n)
-        h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
+    def hash_g(setup: RsaSetup, input_param: int):
+        h = int(hashlib.sha3_256(f"residue{input_param}".encode()).hexdigest(), 16)
         out = h % setup.n
-        while True:
-            if out not in [1, -1]:
-                break
-            numb = random.randint(2, setup.n)
-            h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
-            out = h % setup.n
+        if out in [1, -1]:
+            raise Exception(f"g cannot be in {[-1, 1]}")
         return out
+
+    @classmethod
+    def gen(cls, setup: RsaSetup):
+        numb = random.randint(2, setup.n)
+        while True:
+            try:
+                return cls.hash_g(setup=setup, input_param=numb)
+            except Exception as exc:
+                _log.error(f"{exc}")
+                continue
+        # h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
+        # out = h % setup.n
+        # while True:
+        #     if out not in [1, -1]:
+        #         break
+        #     numb = random.randint(2, setup.n)
+        #     h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
+        #     out = h % setup.n
+        # return out
         # while NumberTheory.gcd(a=numb, b=setup.n) is False:
         #     numb = random.randint(2, setup.n)
         # return numb
 
     @classmethod
     @set_level(logger=_log)
-    def eval(cls, setup: RsaSetup, input_param, _verbose: bool = False) -> EvalResponse:
+    def eval(cls, setup: RsaSetup, input_param, _verbose: bool = False, _hide: bool = False) -> EvalResponse:
         y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
         _log.info(f"[EVALUATION] VDF output: {y[0]}")
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
@@ -100,7 +114,24 @@ class WesolowskiVDF(VDF):
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
         exp = exp_non_modular(a=2, exponent=delay)
         a = exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
-        return a
+        return
+
+    @staticmethod
+    def get_component(idx: int, select_from: List[int], prime_l: int, delay):
+        b = (2 * exp_modular(a=2, exponent=idx, n=prime_l)) // prime_l
+        if b == 1:
+            return select_from[delay - idx - 1]
+
+    @classmethod
+    def alg_4_version_2(cls, n: int, prime_l: int, delay: int, output_list):
+        _log.info("Starting Alg 4")
+        proof_l = list(filter(lambda v: v is not None,
+                              (cls.get_component(idx=i, select_from=output_list, prime_l=prime_l, delay=delay) for i in
+                               range(delay))))
+        if not proof_l:
+            return 1
+        proof = reduce(lambda x, y: (x * y) % n, proof_l)
+        return proof
 
     @classmethod
     def alg_4(cls, n: int, prime_l: int, delay: int, output_list):
@@ -132,7 +163,8 @@ class WesolowskiVDF(VDF):
 
     @classmethod
     @set_level(logger=_log)
-    def verify(cls, setup: RsaSetup, input_param: int, output_param: int, proof: int, _verbose: bool = False):
+    def verify(cls, setup: RsaSetup, input_param: int, output_param: int, proof: int, _verbose: bool = False,
+               _hide: bool = False):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[VERIFY] Generated prime l from flat_shamir_hash: {prime_l}")
         r = exp_modular(a=2, exponent=setup.delay, n=prime_l)
