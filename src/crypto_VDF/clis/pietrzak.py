@@ -1,12 +1,15 @@
 from time import strftime, gmtime
 from typing import Annotated
 
+import pandas as pd
 import typer
 from orjson import orjson
 
 from crypto_VDF.custom_errors.custom_exceptions import NotAQuadraticResidueException
 from crypto_VDF.data_transfer_objects.dto import PublicParams
+from crypto_VDF.data_transfer_objects.plotter import InputType
 from crypto_VDF.utils.grapher import Grapher
+from crypto_VDF.plotter.pietrazk_grapher import PietrzakGrapher
 from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
 from crypto_VDF.verifiable_delay_functions.pietrzak import PietrzakVDF
@@ -117,10 +120,49 @@ def cmd_eval_function(x: int, delay: int = 100, modulus: int = 100):
 @app.command(name="plots")
 def cmd_complexity_plots(
         max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
-        iterations: Annotated[int, typer.Argument(help="Number of iterations")] = 10,
-        fix_input: Annotated[bool, typer.Option(help="Number of iterations")] = False,
+        iterations: Annotated[int, typer.Argument(help="Number of iterations")] = 10
 ):
     s = t()
-    result = Grapher.collect_pietrzak_complexity_data(number_of_delays=max_delay_exp, iterations=iterations,
-                                                      fix_input=fix_input)
+    Grapher.collect_pietrzak_complexity_data(number_of_delays=max_delay_exp, iterations=iterations)
     print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
+
+
+@app.command(name="plots-2")
+def cmd_complexity_plots_2(
+        max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
+        iterations: Annotated[int, typer.Option(help="Number of iterations")] = 10,
+        fix_input: Annotated[bool, typer.Option(help="Run with fixed input")] = False,
+        store_measurements: Annotated[bool, typer.Option(help="Store the measurement")] = True,
+        re_measure: Annotated[
+            bool, typer.Option(help="Re-run the VDF instead of using past measurement to plot")] = True,
+        show: Annotated[bool, typer.Option(help="Show the plot")] = False,
+        verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False
+):
+    s = t()
+    input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
+    grapher = PietrzakGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type)
+    title = f"Pietrzak VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
+    if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
+        _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
+                     f" re-running the VDF")
+        re_measure = True
+    if re_measure is False:
+        data_means = pd.read_csv(str(grapher.paths.macrostate_file_name))
+        plot = grapher.plot_data(
+            data=data_means,
+            title=title,
+            fname=grapher.paths.plot_file_name,
+        )
+
+    else:
+        result = grapher.collect_pietrzak_complexity_data(fix_input=fix_input, _verbose=verbose,
+                                                          store_measurements=store_measurements, re_measure=re_measure)
+
+        plot = grapher.plot_data(
+            data=result.means,
+            title=title,
+            fname=grapher.paths.plot_file_name
+        )
+    print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
+    if show:
+        plot.show()
