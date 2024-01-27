@@ -15,20 +15,33 @@ class Grapher:
         self.number_of_delays = number_of_delays
         self.number_ot_iterations = number_ot_iterations
 
-    def plot_data(self, data, title, fname: str, show: bool = False):
+    def plot_data(self, data, title, fname: str):
         delays_list = np.asarray(data['delay'])
-        yTimeEval = np.asarray(data[f'eval time means for {self.number_ot_iterations} iterations (s)'])
-        yTimeVerif = np.asarray(data[f"verify time means for {self.number_ot_iterations} iterations (s)"])
+        y_time_eval = np.asarray(data[f'eval time means for {self.number_ot_iterations} iterations (s)'])
+        y_time_verif = np.asarray(data[f"verify time means for {self.number_ot_iterations} iterations (s)"])
+        fig, (ax1, ax2) = plt.subplots(2)
+        fig.suptitle(title)
+        ax1.set_title("Eval and Verify")
+        ax1.plot(delays_list, y_time_eval, 'r--', label="Eval func complexity (mean)")
+        ax1.plot(delays_list, y_time_verif, 'b-', label="Verify func complexity (mean)")
+        ax1.set_ylabel('Execution Time')
+        ax1.legend()
+        ax1.grid()
+        ax2.set_title("Verify function")
+        ax2.plot(delays_list, y_time_verif, 'b-', label="Verify func complexity (mean) ")
+        ax2.set_ylabel('Execution Time')
+        ax2.legend()
+        ax2.grid()
 
-        plt.figure(figsize=(15, 12))
-        plt.plot(delays_list, yTimeEval, 'r--', label="Eval func complexity (mean)")
-        plt.plot(delays_list, yTimeVerif, 'b-', label="Verify func complexity (mean) ")
-        plt.plot([], [], ' ', label="Security parameter = 256")
+        plt.tight_layout()
 
-        plt.title(title)
-        plt.xlabel("Delays")
-        plt.ylabel("Time taken (seconds)")
-        plt.legend()
+        # plt.figure(figsize=(15, 12))
+        # plt.plot(delays_list, y_time_eval, 'r--', label="Eval func complexity (mean)")
+        # plt.plot(delays_list, y_time_verif, 'b-', label="Verify func complexity (mean) ")
+        # plt.plot([], [], ' ', label="Security parameter = 256")
+
+        #ax1.xlabel("Delays")
+        #ax1.ylabel("Time taken (seconds)")
         plt.savefig(str(fname) + ".png")
         print("\nfigure saved successfully!\n")
         return plt
