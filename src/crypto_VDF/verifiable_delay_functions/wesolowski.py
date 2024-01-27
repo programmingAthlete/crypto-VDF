@@ -17,7 +17,7 @@ _log = get_logger(__name__)
 class WesolowskiVDF(VDF):
 
     @staticmethod
-    def alg_4_base(delay, prime_l, input_var, n):
+    def alg_4_original(delay, prime_l, input_var, n):
         rs = []
         x = 1
         r = 1
@@ -71,18 +71,6 @@ class WesolowskiVDF(VDF):
             except Exception as exc:
                 _log.error(f"{exc}")
                 continue
-        # h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
-        # out = h % setup.n
-        # while True:
-        #     if out not in [1, -1]:
-        #         break
-        #     numb = random.randint(2, setup.n)
-        #     h = int(hashlib.sha3_256(f"residue{numb}".encode()).hexdigest(), 16)
-        #     out = h % setup.n
-        # return out
-        # while NumberTheory.gcd(a=numb, b=setup.n) is False:
-        #     numb = random.randint(2, setup.n)
-        # return numb
 
     @classmethod
     @set_level(logger=_log)
@@ -113,8 +101,7 @@ class WesolowskiVDF(VDF):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
         exp = exp_non_modular(a=2, exponent=delay)
-        a = exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
-        return
+        return exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
 
     @staticmethod
     def get_component(idx: int, select_from: List[int], prime_l: int, delay):
@@ -123,7 +110,7 @@ class WesolowskiVDF(VDF):
             return select_from[delay - idx - 1]
 
     @classmethod
-    def alg_4_version_2(cls, n: int, prime_l: int, delay: int, output_list):
+    def alg_4_revisited_comprehension(cls, n: int, prime_l: int, delay: int, output_list):
         _log.info("Starting Alg 4")
         proof_l = list(filter(lambda v: v is not None,
                               (cls.get_component(idx=i, select_from=output_list, prime_l=prime_l, delay=delay) for i in
@@ -134,8 +121,8 @@ class WesolowskiVDF(VDF):
         return proof
 
     @classmethod
-    def alg_4(cls, n: int, prime_l: int, delay: int, output_list):
-        _log.info("Starting Alg 4")
+    def alg_4_revisited(cls, n: int, prime_l: int, delay: int, output_list):
+        _log.info("Starting Alg 4 revisited")
         r = 1
         proof_l = [1]
         for i in range(delay):
@@ -158,7 +145,7 @@ class WesolowskiVDF(VDF):
                           output_list: List[int]):
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
-        proof = cls.alg_4(n=setup.n, prime_l=prime_l, delay=setup.delay, output_list=output_list)
+        proof = cls.alg_4_revisited(n=setup.n, prime_l=prime_l, delay=setup.delay, output_list=output_list)
         return proof
 
     @classmethod

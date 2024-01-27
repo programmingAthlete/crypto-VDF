@@ -73,9 +73,9 @@ def cmd_check_alg(delay: Annotated[int, typer.Option(help="Delay of the VDF")] =
     g = WesolowskiVDF.gen(setup=pp)
     prime_l = WesolowskiVDF.flat_shamir_hash(security_param=pp.delay, g=g, y=2)
     # verif = g ** (2 ** pp.delay // l) % pp.n
-    alg_4 = WesolowskiVDF.alg_4_base(delay=pp.delay, prime_l=prime_l, input_var=g, n=pp.n)
+    alg_4 = WesolowskiVDF.alg_4_original(delay=pp.delay, prime_l=prime_l, input_var=g, n=pp.n)
     out = square_sequences_v2(a=g, steps=pp.delay, n=pp.n)
-    r = WesolowskiVDF.alg_4(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=out[1])
+    r = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=out[1])
     assert r == alg_4[0]
 
 
