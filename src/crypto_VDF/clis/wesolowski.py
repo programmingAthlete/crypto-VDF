@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 from orjson import orjson
 
-from crypto_VDF.data_transfer_objects.plotter import InputType
+from crypto_VDF.data_transfer_objects.plotter import InputType, VDFName
 from crypto_VDF.plotter.wesolowski_grapher import WesolowskiGrapher
 from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.utils import square_sequences_v2
@@ -104,6 +104,7 @@ def cmd_complexity_plots(
             data=data_means,
             title=title,
             fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.WESOLOWSKI
         )
 
     else:
@@ -113,7 +114,8 @@ def cmd_complexity_plots(
         plot = grapher.plot_data(
             data=result.means,
             title=title,
-            fname=grapher.paths.plot_file_name
+            fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.WESOLOWSKI
         )
     print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
     if show:

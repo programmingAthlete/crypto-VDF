@@ -4,7 +4,6 @@ from crypto_VDF.data_transfer_objects.dto import RsaSetup
 from crypto_VDF.data_transfer_objects.plotter import CollectVDFData, InputType, VDFName
 from crypto_VDF.utils.logger import get_logger, set_level
 from crypto_VDF.verifiable_delay_functions.wesolowski import WesolowskiVDF
-from crypto_VDF.utils.number_theory import NumberTheory
 from time import time as t
 from time import strftime, gmtime
 from crypto_VDF.utils.utils import arrange_powers_of_2
@@ -25,7 +24,7 @@ class WesolowskiGrapher(Grapher):
 
     @classmethod
     def run_vdf_random(cls, pp: RsaSetup):
-        x = NumberTheory.generate_quadratic_residue(pp.n)
+        x = WesolowskiVDF.gen(setup=pp)
         return cls.run_vdf(pp=pp, input_pram=x)
 
     @staticmethod
@@ -44,6 +43,10 @@ class WesolowskiGrapher(Grapher):
         assert verification is True
         # print(f"verification took: {tVerifEnd} seconds")
         return tOutEnd, tVerifEnd, input_pram, pp.delay
+
+    @classmethod
+    def run_vdf_random_with_delay(cls, delay):
+        return cls.run_vdf_random(WesolowskiVDF.setup(security_param=128, delay=delay))
 
     @classmethod
     def generate_pietrzak_complexity_data(cls, number_of_delays: int = 10, delay_repeat: int = 1,
@@ -94,15 +97,10 @@ class WesolowskiGrapher(Grapher):
     @set_level(logger=_log)
     def collect_pietrzak_complexity_data(self, fix_input: bool = False, _verbose: bool = False,
                                          store_measurements: bool = True) -> CollectVDFData:
-        if fix_input is True:
-            data = self.generate_pietrzak_complexity_data(number_of_delays=self.number_of_delays,
-                                                          delay_repeat=self.number_ot_iterations,
-                                                          fix_input=True)
-        else:
-            data = self.generate_pietrzak_complexity_data(number_of_delays=self.number_of_delays,
-                                                          delay_repeat=self.number_ot_iterations,
-                                                          fix_input=False)
 
+        data = self.generate_pietrzak_complexity_data(number_of_delays=self.number_of_delays,
+                                                      delay_repeat=self.number_ot_iterations,
+                                                      fix_input=fix_input)
         input_data = self.get_macrostate(data=data)
         if store_measurements:
             Grapher.store_data(filename=self.paths.measurements_file_name, data=data)

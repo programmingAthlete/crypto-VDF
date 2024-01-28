@@ -51,6 +51,7 @@ class Grapher:
 
                 verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=evaluation.output,
                                                   proof=evaluation.proof, _hide=True)
+                assert verification is True
                 tVerifEnd = t() - tVerifStart
                 # print(f"verification took: {tVerifEnd} seconds")
                 yTimeVerif = np.append(yTimeVerif, tVerifEnd)
@@ -170,7 +171,7 @@ class Grapher:
             plt.ylabel("Time taken (seconds)")
             plt.legend()
             plt.savefig(str(fname) + ".png")
-            print(f"\nfigure saved successfully!\n")
+            print("\nfigure saved successfully!\n")
         else:
             plt.show()
 

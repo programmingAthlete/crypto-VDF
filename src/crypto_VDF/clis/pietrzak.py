@@ -7,7 +7,7 @@ from orjson import orjson
 
 from crypto_VDF.custom_errors.custom_exceptions import NotAQuadraticResidueException
 from crypto_VDF.data_transfer_objects.dto import PublicParams
-from crypto_VDF.data_transfer_objects.plotter import InputType
+from crypto_VDF.data_transfer_objects.plotter import InputType, VDFName
 from crypto_VDF.utils.grapher import Grapher
 from crypto_VDF.plotter.pietrazk_grapher import PietrzakGrapher
 from crypto_VDF.utils.logger import get_logger
@@ -129,6 +129,7 @@ def cmd_complexity_plots(
 
 @app.command(name="plots-2")
 def cmd_complexity_plots_2(
+        security_param: Annotated[int, typer.Option(help="Security parameter")] = 128,
         max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
         iterations: Annotated[int, typer.Option(help="Number of iterations")] = 10,
         fix_input: Annotated[bool, typer.Option(help="Run with fixed input")] = False,
@@ -140,7 +141,8 @@ def cmd_complexity_plots_2(
 ):
     s = t()
     input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
-    grapher = PietrzakGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type)
+    grapher = PietrzakGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type,
+                              security_param=security_param)
     title = f"Pietrzak VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
     if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
         _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
@@ -152,16 +154,18 @@ def cmd_complexity_plots_2(
             data=data_means,
             title=title,
             fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.PIETRZAK
         )
 
     else:
         result = grapher.collect_pietrzak_complexity_data(fix_input=fix_input, _verbose=verbose,
-                                                          store_measurements=store_measurements, re_measure=re_measure)
+                                                          store_measurements=store_measurements)
 
         plot = grapher.plot_data(
             data=result.means,
             title=title,
-            fname=grapher.paths.plot_file_name
+            fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.PIETRZAK
         )
     print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
     if show:

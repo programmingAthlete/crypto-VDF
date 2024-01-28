@@ -193,8 +193,7 @@ def create_path_to_data_folder(dataFolderName="data"):
                     )
                 )
             )
-        )
-        , dataFolderName)
+        ), dataFolderName)
 
 
 def create_path_to_data_folder_v2(dataFolderName="data") -> Path:
