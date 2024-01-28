@@ -16,12 +16,12 @@ class TestWesolowskiProof(unittest.TestCase):
 
         y = square_sequences_v2(steps=pp.delay, a=x, n=pp.n)
         prime_l = WesolowskiVDF.flat_shamir_hash(security_param=pp.security_param, g=x, y=y[0])
-        proof = WesolowskiVDF.alg_4(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=y[1])
+        proof = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=y[1])
         e = 2 ** pp.delay
         exp = e // prime_l
         t = (x ** (exp)) % pp.n
 
-        al4 = WesolowskiVDF.alg_4_base(delay=pp.delay, prime_l=prime_l, input_var=x, n=pp.n)
+        al4 = WesolowskiVDF.alg_4_original(delay=pp.delay, prime_l=prime_l, input_var=x, n=pp.n)
         a = 1
 
     def test_a(self):
@@ -38,9 +38,9 @@ class TestWesolowskiProof(unittest.TestCase):
         l = WesolowskiVDF.flat_shamir_hash(security_param=4, g=g, y=2)
         g = 5
         verif = g ** (2 ** 4 // l) % pp.n
-        alg_4 = WesolowskiVDF.alg_4_base(delay=pp.delay, prime_l=l, input_var=g, n=21)
+        alg_4 = WesolowskiVDF.alg_4_original(delay=pp.delay, prime_l=l, input_var=g, n=21)
 
-        a_4 = WesolowskiVDF.alg_4(n=pp.n, prime_l=l, delay=pp.delay, output_list=alg_4[1])
+        a_4 = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=l, delay=pp.delay, output_list=alg_4[1])
         a = 1
         # 0 0 1 1
 
@@ -64,10 +64,10 @@ class TestWesolowskiProof(unittest.TestCase):
 
         l = WesolowskiVDF.flat_shamir_hash(security_param=pp.delay, g=g, y=2)
         verif = exp_modular(a=g, exponent=(2 ** pp.delay // l), n=pp.n)
-        alg_4 = WesolowskiVDF.alg_4_base(delay=pp.delay, prime_l=l, input_var=g, n=pp.n)
+        alg_4 = WesolowskiVDF.alg_4_original(delay=pp.delay, prime_l=l, input_var=g, n=pp.n)
         # self.assertEqual(verif, alg_4[0])
         out = square_sequences_v2(a=g, steps=pp.delay, n=pp.n)
-        r = WesolowskiVDF.alg_4(n=pp.n, prime_l=l, delay=pp.delay, output_list=out[1])
+        r = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=l, delay=pp.delay, output_list=out[1])
         self.assertEqual(r, alg_4[0])
 
     def test_2(self):
@@ -75,9 +75,9 @@ class TestWesolowskiProof(unittest.TestCase):
         l = 13
         n = 21
         t = 4
-        alg_4 = WesolowskiVDF.alg_4_base(delay=t, prime_l=l, input_var=g, n=n)
+        alg_4 = WesolowskiVDF.alg_4_original(delay=t, prime_l=l, input_var=g, n=n)
         v = g ** (2 ** t // l) % n
         self.assertEqual(alg_4[0], v)
         out = square_sequences_v2(a=g, steps=t, n=n)
-        r = WesolowskiVDF.alg_4(n=n, prime_l=l, delay=t, output_list=out[1])
+        r = WesolowskiVDF.alg_4_revisited(n=n, prime_l=l, delay=t, output_list=out[1])
         self.assertEqual(r, alg_4[0])

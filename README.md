@@ -100,3 +100,9 @@ Delay of 2^(20)
 <code>cryptoVDF wesolowski full-vdf-naive --delay 1048576 --security-parameter 128 --trapdoor</code>
 
 <code>cryptoVDF wesolowski full-vdf --delay 1048576 --security-parameter 128 --trapdoor</code>
+
+# Plots
+</code>cryptoVDF wesolowski plots --max-delay-exp 10 --iterations 20  --show</code>
+
+</code>cryptoVDF pietrzak plots-2 --max-delay-exp 10 --iterations 20  --show</code>
+

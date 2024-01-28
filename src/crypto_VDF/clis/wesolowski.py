@@ -3,9 +3,13 @@ from typing import Annotated
 import typer
 from orjson import orjson
 
+from crypto_VDF.data_transfer_objects.plotter import InputType, VDFName
+from crypto_VDF.plotter.wesolowski_grapher import WesolowskiGrapher
 from crypto_VDF.utils.logger import get_logger
 from crypto_VDF.utils.utils import square_sequences_v2
 from crypto_VDF.verifiable_delay_functions.wesolowski import WesolowskiVDF
+import pandas as pd
+from time import time as t, strftime, gmtime
 
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
 
@@ -69,7 +73,50 @@ def cmd_check_alg(delay: Annotated[int, typer.Option(help="Delay of the VDF")] =
     g = WesolowskiVDF.gen(setup=pp)
     prime_l = WesolowskiVDF.flat_shamir_hash(security_param=pp.delay, g=g, y=2)
     # verif = g ** (2 ** pp.delay // l) % pp.n
-    alg_4 = WesolowskiVDF.alg_4_base(delay=pp.delay, prime_l=prime_l, input_var=g, n=pp.n)
+    alg_4 = WesolowskiVDF.alg_4_original(delay=pp.delay, prime_l=prime_l, input_var=g, n=pp.n)
     out = square_sequences_v2(a=g, steps=pp.delay, n=pp.n)
-    r = WesolowskiVDF.alg_4(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=out[1])
+    r = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=out[1])
     assert r == alg_4[0]
+
+
+@app.command(name="plots")
+def cmd_complexity_plots(
+        max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
+        iterations: Annotated[int, typer.Option(help="Number of iterations")] = 10,
+        fix_input: Annotated[bool, typer.Option(help="Run with fixed input")] = False,
+        store_measurements: Annotated[bool, typer.Option(help="Store the measurement")] = True,
+        re_measure: Annotated[
+            bool, typer.Option(help="Re-run the VDF instead of using past measurement to plot")] = True,
+        show: Annotated[bool, typer.Option(help="Show the plot")] = False,
+        verbose: Annotated[bool, typer.Option(help="Show Debug Logs")] = False
+):
+    s = t()
+    input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
+    grapher = WesolowskiGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type)
+    title = f"Wesolowski VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
+    if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
+        _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
+                     f" re-running the VDF")
+        re_measure = True
+    if re_measure is False:
+        data_means = pd.read_csv(str(grapher.paths.macrostate_file_name))
+        plot = grapher.plot_data(
+            data=data_means,
+            title=title,
+            fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.WESOLOWSKI
+        )
+
+    else:
+        result = grapher.collect_pietrzak_complexity_data(fix_input=fix_input, _verbose=verbose,
+                                                          store_measurements=store_measurements)
+
+        plot = grapher.plot_data(
+            data=result.means,
+            title=title,
+            fname=grapher.paths.plot_file_name,
+            vdf_name=VDFName.WESOLOWSKI
+        )
+    print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
+    if show:
+        plot.show()

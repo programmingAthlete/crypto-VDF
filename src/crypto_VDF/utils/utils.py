@@ -1,5 +1,6 @@
 import os
 import hashlib
+from pathlib import Path
 from typing import Tuple, List
 
 from crypto_VDF.utils.number_theory import NumberTheory
@@ -192,5 +193,17 @@ def create_path_to_data_folder(dataFolderName="data"):
                     )
                 )
             )
-        )
-        , dataFolderName)
+        ), dataFolderName)
+
+
+def create_path_to_data_folder_v2(dataFolderName="data") -> Path:
+    return Path(os.path.join(
+        os.path.dirname(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(
+                        get_current_file_abs_path(__file__)
+                    )
+                )
+            )
+        ), dataFolderName))

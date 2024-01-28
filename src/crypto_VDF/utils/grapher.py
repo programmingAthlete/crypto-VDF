@@ -51,6 +51,7 @@ class Grapher:
 
                 verification = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=evaluation.output,
                                                   proof=evaluation.proof, _hide=True)
+                assert verification is True
                 tVerifEnd = t() - tVerifStart
                 # print(f"verification took: {tVerifEnd} seconds")
                 yTimeVerif = np.append(yTimeVerif, tVerifEnd)
@@ -128,9 +129,10 @@ class Grapher:
              f"verify time means for {iterations} iterations (s)": fixed_input_verify_time_means,
              "input": fixed_input_data['input'].unique()})
 
-        random_input_data = pd.DataFrame({"delay": delays_list,
-                                          f"eval time means for {iterations} iterations (s)": random_input_eval_time_means,
-                                          f"verify time means for {iterations} iterations (s)": random_input_verify_time_means})
+        random_input_data = pd.DataFrame(
+            {"delay": delays_list,
+             f"eval time means for {iterations} iterations (s)": random_input_eval_time_means,
+             f"verify time means for {iterations} iterations (s)": random_input_verify_time_means})
 
         title = f"Pietrzak VDF complexity (mean after {iterations} iterations)"
 
@@ -169,14 +171,15 @@ class Grapher:
             plt.ylabel("Time taken (seconds)")
             plt.legend()
             plt.savefig(str(fname) + ".png")
-            print(f"\nfigure saved successfully!\n")
+            print("\nfigure saved successfully!\n")
         else:
             plt.show()
 
 
-s = t()
-result = Grapher.collect_pietrzak_complexity_data(20, 10)
-print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
-print(result)
-print(result['fixed_input_data'])
-print(result['random_input_data'])
+if __name__ == '__main':
+    s = t()
+    result = Grapher.collect_pietrzak_complexity_data(20, 10)
+    print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
+    print(result)
+    print(result['fixed_input_data'])
+    print(result['random_input_data'])
