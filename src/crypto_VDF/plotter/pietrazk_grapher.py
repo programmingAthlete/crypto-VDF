@@ -50,8 +50,7 @@ class PietrzakGrapher(Grapher):
     def run_vdf_random_with_delay(cls, delay, security_param):
         return cls.run_vdf_random(PietrzakVDF.setup(security_param=security_param, delay=delay))
 
-    @classmethod
-    def generate_pietrzak_complexity_data(cls, security_param, number_of_delays: int = 10, delay_repeat: int = 1,
+    def generate_pietrzak_complexity_data(self, number_of_delays: int = 10, delay_repeat: int = 1,
                                           fix_input=False) -> pd.DataFrame:
 
         delays_list = np.array(arrange_powers_of_2(1, number_of_delays))
@@ -60,16 +59,16 @@ class PietrzakGrapher(Grapher):
 
         if fix_input:
 
-            primes = PietrzakVDF.generate_rsa_primes(security_param)
+            primes = PietrzakVDF.generate_rsa_primes(self.security_param)
             modulus = primes.q.base_10 * primes.p.base_10
             x = NumberTheory.generate_quadratic_residue(modulus=modulus)
-            results = [cls.run_vdf(pp := PietrzakVDF.setup(security_param=security_param, delay=i), input_pram=x) for
+            results = [cls.run_vdf(pp := PietrzakVDF.setup(security_param=self.security_param, delay=i), input_pram=x) for
                        idx, i in
                        enumerate(delays_list) for _ in range(delay_repeat)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
         else:
-            results = [cls.run_vdf_random(pp := PietrzakVDF.setup(security_param=security_param, delay=i)) for idx, i in
+            results = [cls.run_vdf_random(pp := PietrzakVDF.setup(security_param=self.security_param, delay=i)) for idx, i in
                        enumerate(delays_list) for _ in range(delay_repeat)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
@@ -104,7 +103,7 @@ class PietrzakGrapher(Grapher):
                                          store_measurements: bool = True) -> CollectVDFData:
         data = self.generate_pietrzak_complexity_data(number_of_delays=self.number_of_delays,
                                                       delay_repeat=self.number_ot_iterations,
-                                                      fix_input=fix_input, security_param=self.security_param)
+                                                      fix_input=fix_input)
 
         input_data = self.get_macrostate(data=data)
         if store_measurements:
@@ -119,7 +118,7 @@ class PietrzakGrapher(Grapher):
 if __name__ == '__main__':
     s = t()
     # grapher = PietrzakGrapher(number_of_delays=20, number_ot_iterations=10)
-    grapher = PietrzakGrapher(number_of_delays=2, number_ot_iterations=2)
+    grapher = PietrzakGrapher(number_of_delays=2, number_ot_iterations=2, security_param=10)
     result = grapher.collect_pietrzak_complexity_data()
     print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
     print(result)

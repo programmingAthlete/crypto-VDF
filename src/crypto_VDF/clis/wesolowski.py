@@ -81,6 +81,7 @@ def cmd_check_alg(delay: Annotated[int, typer.Option(help="Delay of the VDF")] =
 
 @app.command(name="plots")
 def cmd_complexity_plots(
+        security_parameter: Annotated[int, typer.Option(help="Number of bits of the modulus")] = 20,
         max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
         iterations: Annotated[int, typer.Option(help="Number of iterations")] = 10,
         fix_input: Annotated[bool, typer.Option(help="Run with fixed input")] = False,
@@ -92,7 +93,8 @@ def cmd_complexity_plots(
 ):
     s = t()
     input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
-    grapher = WesolowskiGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type)
+    grapher = WesolowskiGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type,
+                                security_parameter=security_parameter)
     title = f"Wesolowski VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
     if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
         _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
@@ -108,8 +110,8 @@ def cmd_complexity_plots(
         )
 
     else:
-        result = grapher.collect_pietrzak_complexity_data(fix_input=fix_input, _verbose=verbose,
-                                                          store_measurements=store_measurements)
+        result = grapher.collect_wesolowski_complexity_data(fix_input=fix_input, _verbose=verbose,
+                                                            store_measurements=store_measurements)
 
         plot = grapher.plot_data(
             data=result.means,

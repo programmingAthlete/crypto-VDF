@@ -15,57 +15,58 @@ _log = get_logger(__name__)
 
 class WesolowskiGrapher(Grapher):
 
-    def __init__(self, number_of_delays: int, number_ot_iterations: int,
+    def __init__(self, number_of_delays: int, number_ot_iterations: int, security_parameter: int,
                  input_type: InputType = InputType.RANDOM_INPUT):
         self.delays = np.array(arrange_powers_of_2(1, number_of_delays))
+        self.security_parameter = security_parameter
         self.paths = self.get_paths(delay_sub_dir=f"2_to_power_{number_of_delays}", iterations=number_ot_iterations,
                                     input_type=input_type, vdf_name=VDFName.WESOLOWSKI)
         super().__init__(number_of_delays=number_of_delays, number_ot_iterations=number_ot_iterations)
 
-    @classmethod
-    def run_vdf_random(cls, pp: RsaSetup):
+    def run_vdf_random(self, pp: RsaSetup):
         x = WesolowskiVDF.gen(setup=pp)
-        return cls.run_vdf(pp=pp, input_pram=x)
+        return self.run_vdf(pp=pp, input_pram=x)
 
-    @staticmethod
-    def run_vdf(pp: RsaSetup, input_pram: int):
+    def run_vdf(self, pp: RsaSetup, input_pram: int):
+        _log.debug(f"[RUN-VDF] Starting the evaluation function with x = {input_pram}")
         tOutStart = t()
         evaluation = WesolowskiVDF.eval(setup=pp, input_param=input_pram, _hide=True)
         tOutEnd = t() - tOutStart
-
-        # print(f"proof took: {tProofEnd} seconds")
-
+        _log.debug(f"[RUN-VDF] Finished the evaluation function with (y,pi) = ({evaluation.output},{evaluation.proof})"
+                   f" in {tOutEnd} seconds")
+        _log.debug(f"[RUN-VDF] Starting the verification function with (x,y,pi) ="
+                   f" ({input_pram},{evaluation.output},{evaluation.proof}")
         tVerifStart = t()
-
         verification = WesolowskiVDF.verify(setup=pp, input_param=input_pram, output_param=evaluation.output,
                                             proof=evaluation.proof, _hide=True)
         tVerifEnd = t() - tVerifStart
+        _log.debug(f"[RUN-VDF] Finished the verification function with verification: {verification} in {tVerifEnd} "
+                   f"seconds")
         assert verification is True
-        # print(f"verification took: {tVerifEnd} seconds")
+
         return tOutEnd, tVerifEnd, input_pram, pp.delay
 
-    @classmethod
-    def run_vdf_random_with_delay(cls, delay):
-        return cls.run_vdf_random(WesolowskiVDF.setup(security_param=128, delay=delay))
+    def run_vdf_random_with_delay(self, delay):
+        return self.run_vdf_random(WesolowskiVDF.setup(security_param=self.security_parameter, delay=delay))
 
-    @classmethod
-    def generate_pietrzak_complexity_data(cls, number_of_delays: int = 10, delay_repeat: int = 1,
-                                          fix_input=False) -> pd.DataFrame:
+    def generate_wesolowski_complexity_data(self, fix_input=False) -> pd.DataFrame:
 
-        delays_list = np.array(arrange_powers_of_2(1, number_of_delays))
+        delays_list = np.array(arrange_powers_of_2(1, self.number_of_delays))
         _log.info(f"[WESOLOWSKI-GENERATE-DATA] Delays {delays_list}")
-        _log.info(f"[WESOLOWSKI-GENERATE-DATA] Delay repeat {delay_repeat}")
+        _log.info(f"[WESOLOWSKI-GENERATE-DATA] Delay repeat {self.number_ot_iterations}")
 
         if fix_input:
-            rsa_setup = WesolowskiVDF.setup(security_param=128, delay=2)
+            rsa_setup = WesolowskiVDF.setup(security_param=self.security_parameter, delay=2)
             x = WesolowskiVDF.gen(setup=rsa_setup)
-            results = [cls.run_vdf(pp := WesolowskiVDF.setup(security_param=128, delay=i), input_pram=x) for idx, i in
-                       enumerate(delays_list) for _ in range(delay_repeat)]
+            results = [
+                self.run_vdf(pp := WesolowskiVDF.setup(security_param=self.security_parameter, delay=i), input_pram=x)
+                for idx, i in
+                enumerate(delays_list) for _ in range(self.number_ot_iterations)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
         else:
-            results = [cls.run_vdf_random(pp := WesolowskiVDF.setup(security_param=128, delay=i)) for idx, i in
-                       enumerate(delays_list) for _ in range(delay_repeat)]
+            results = [self.run_vdf_random(pp := WesolowskiVDF.setup(security_param=self.security_parameter, delay=i)) for idx, i in
+                       enumerate(delays_list) for _ in range(self.number_ot_iterations)]
             time_eval_macro, time_verif_macro, macrostate_counted_delays, macrostate_inputs = zip(*results)
 
         _log.info("[WESOLOWSKI-GENERATE-DATA] VDF ran successfully for all delays and repetitions")
@@ -81,26 +82,31 @@ class WesolowskiGrapher(Grapher):
         return dt
 
     def get_macrostate(self, data: pd.DataFrame) -> pd.DataFrame:
-        eval_time_means, verify_time_means = zip(*[
+        eval_time_means, eval_time_std, verify_time_means, verify_time_std = zip(*[
             (data.loc[data['delay'] == delay]['eval time (s)'].sum() / self.number_ot_iterations,
-             data.loc[data['delay'] == delay]['verify time (s)'].sum() / self.number_ot_iterations)
+             data.loc[data['delay'] == delay]['eval time (s)'].std(),
+             data.loc[data['delay'] == delay]['verify time (s)'].sum() / self.number_ot_iterations,
+             data.loc[data['delay'] == delay]['verify time (s)'].std()
+             )
             for delay in self.delays])
         d = data['input'].unique()
         if len(d) != len(self.delays):
             d = [0 for _ in range(len(self.delays))]
 
         return pd.DataFrame(
-            {"delay": self.delays, f"eval time means for {self.number_ot_iterations} iterations (s)": eval_time_means,
+            {"delay": self.delays,
+             f"eval time means for {self.number_ot_iterations} iterations (s)": eval_time_means,
+             f"eval time std for {self.number_ot_iterations} iterations (s)": eval_time_std,
              f"verify time means for {self.number_ot_iterations} iterations (s)": verify_time_means,
+             f"verify time std for {self.number_ot_iterations} iterations (s)": verify_time_std,
              "input": d})
 
     @set_level(logger=_log)
-    def collect_pietrzak_complexity_data(self, fix_input: bool = False, _verbose: bool = False,
+    def collect_wesolowski_complexity_data(self, fix_input: bool = False, _verbose: bool = False,
                                          store_measurements: bool = True) -> CollectVDFData:
 
-        data = self.generate_pietrzak_complexity_data(number_of_delays=self.number_of_delays,
-                                                      delay_repeat=self.number_ot_iterations,
-                                                      fix_input=fix_input)
+        data = self.generate_wesolowski_complexity_data(fix_input=fix_input)
+        _log.info("[COLLECT-VDF-DATA] Finished generating the data")
         input_data = self.get_macrostate(data=data)
         if store_measurements:
             Grapher.store_data(filename=self.paths.measurements_file_name, data=data)
@@ -114,7 +120,7 @@ class WesolowskiGrapher(Grapher):
 if __name__ == '__main__':
     s = t()
     # grapher = PietrzakGrapher(number_of_delays=20, number_ot_iterations=10)
-    grapher = WesolowskiGrapher(number_of_delays=2, number_ot_iterations=2)
-    result = grapher.collect_pietrzak_complexity_data()
+    grapher = WesolowskiGrapher(number_of_delays=2, number_ot_iterations=2, security_parameter=10)
+    result = grapher.collect_wesolowski_complexity_data()
     print(f"the operation took {t() - s} seconds or {strftime('%H:%M:%S', gmtime(t() - s))}")
     print(result)
