@@ -8,5 +8,5 @@ crypto_VDF.egg-info
 .pytest_cache
 **/__pycache__/
 
-data2/pietrzak/*
-data2/wesolowski/*
+data/pietrzak/*
+data/wesolowski/*
