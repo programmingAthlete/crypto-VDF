@@ -21,7 +21,7 @@ class Grapher:
         y_time_verif = np.asarray(data[f"verify time means for {self.number_ot_iterations} iterations (s)"])
         y_time_eval_std = np.asarray(data[f"verify time std for {self.number_ot_iterations} iterations (s)"])
         y_time_verif_std = np.asarray(data[f"verify time std for {self.number_ot_iterations} iterations (s)"])
-        zalpha = 1.96
+        zalpha = 1.95
         upper_bar_eval, lower_bar_eval = zip(
             *[(y_time_eval[i] + zalpha * y_time_eval_std[i], y_time_eval[i] - zalpha * y_time_eval_std[i]) for i in
               range(len(y_time_verif_std))])
@@ -31,19 +31,24 @@ class Grapher:
         fig, (ax1, ax2) = plt.subplots(2)
         fig.suptitle(title)
         ax1.set_title("Eval and Verify")
-        ax1.fill_between(delays_list, upper_bar_eval, lower_bar_eval, alpha=0.3, color = "darkorange", label =r"$ Gaussian CI $")
+        ax1.fill_between(delays_list, upper_bar_eval, lower_bar_eval, alpha=0.3, color="darkorange",
+                         label="Gaussian CI")
         ax1.plot(delays_list, y_time_eval, 'r--', label="Eval func complexity (mean)", marker='x')
         ax1.plot(delays_list, y_time_verif, 'b-', label="Verify func complexity (mean)", marker='o')
+        ax1.set_xticks(delays_list, labels=[f'$2^{{{item}}}$' for item in range(self.number_of_delays)])
         ax1.set_ylabel('Execution Time')
+        ax1.set_xlabel('Delay')
         ax1.legend()
         ax1.grid()
         ax2.set_title("Verify function")
         ax2.fill_between(delays_list, upper_bar_verify, lower_bar_verify, alpha=0.3, color="darkorange",
-                         label=r"$ Gaussian CI $")
+                         label="Gaussian CI")
         ax2.plot(delays_list, y_time_verif, 'b-', label="Verify func complexity (mean)", marker='o')
         ax2.set_ylabel('Execution Time')
+        ax2.set_xlabel('Delay')
+        ax2.set_xticks(delays_list, labels=[f'$2^{{{item}}}$' for item in range(self.number_of_delays)])
         if vdf_name == VDFName.WESOLOWSKI:
-            ax2.set_ylim(0, 0.02)
+            ax2.set_ylim(0, 0.01)
         ax2.legend()
         ax2.grid()
 

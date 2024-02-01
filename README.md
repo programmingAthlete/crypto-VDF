@@ -110,3 +110,9 @@ Delay of 2^(20)
 
 <code>cryptoVDF pietrzak plots-2 --max-delay-exp 10 --iterations 400 --security-parameter 4 --show --verbose</code>
 
+<code>cryptoVDF pietrzak plots-2 --max-delay-exp 10 --iterations 10 --security-parameter 128 --show --verbose</code>
+
+<code>cryptoVDF wesolowski plots --max-delay-exp 10 --iterations 10 --security-parameter 128 --show --verbose</code>
+
+<code>cryptoVDF pietrzak plots-2 --max-delay-exp 10 --iterations 10 --security-parameter 128 --show --verbose</code>
+

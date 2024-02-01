@@ -95,7 +95,7 @@ def cmd_complexity_plots(
     input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
     grapher = WesolowskiGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type,
                                 security_parameter=security_parameter)
-    title = f"Wesolowski VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
+    title = rf"Wesolowski VDF complexity (mean after {grapher.number_ot_iterations} iterations) $\lambda$ = {security_parameter}"
     if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
         _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
                      f" re-running the VDF")
