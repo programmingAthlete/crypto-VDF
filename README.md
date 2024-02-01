@@ -33,13 +33,9 @@ Ourside of the source folder, the following files can be found
 </ul>
 
 ## Setup
-Install the dependencies using
+Install the package using
 
-<code>make deps</code>
-
-<b>If in addition to use the Typer CLI (optional)</b>
-
-<code>pip install -e .</code>
+<code>make setup</code>
 
 
 ## How to run the VFDs 
