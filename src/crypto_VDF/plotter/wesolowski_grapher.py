@@ -106,7 +106,7 @@ class WesolowskiGrapher(Grapher):
                                          store_measurements: bool = True) -> CollectVDFData:
 
         data = self.generate_wesolowski_complexity_data(fix_input=fix_input)
-        _log.info("[COLLECT-VDF-DATA] Finished generating the data")
+        _log.info("[COLLECT-VDF-DATA] Finished generating the data2")
         input_data = self.get_macrostate(data=data)
         if store_measurements:
             Grapher.store_data(filename=self.paths.measurements_file_name, data=data)

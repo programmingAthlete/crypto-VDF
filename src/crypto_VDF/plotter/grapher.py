@@ -71,7 +71,7 @@ class Grapher:
         input_type_path = vdf_path / str(input_type.value)
         sub_dir = input_type_path / delay_sub_dir
 
-        # create the directories for data
+        # create the directories for data2
         cls.create_directories([vdf_path, input_path, sub_dir])
 
         input_file_name = f"repeated_{iterations}_times.csv"

@@ -183,7 +183,7 @@ def get_current_file_abs_path(file):
     return os.path.realpath(file)
 
 
-def create_path_to_data_folder(dataFolderName="data"):
+def create_path_to_data_folder(dataFolderName="data2"):
     return os.path.join(
         os.path.dirname(
             os.path.dirname(
@@ -196,7 +196,7 @@ def create_path_to_data_folder(dataFolderName="data"):
         ), dataFolderName)
 
 
-def create_path_to_data_folder_v2(dataFolderName="data") -> Path:
+def create_path_to_data_folder_v2(dataFolderName="data2") -> Path:
     return Path(os.path.join(
         os.path.dirname(
             os.path.dirname(
