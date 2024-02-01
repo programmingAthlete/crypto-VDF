@@ -10,11 +10,18 @@ M = $(shell printf "\033[34;1m▶\033[0m")
 help:
 	@echo "Available targets:"
 	@echo "$(M) help          - Display this help message"
+	@echo "$(M) setup          - Install package"
 	@echo "$(M) deps          - Install dependencies"
 	@echo "$(M) deps-tests    - Install dependencies for tests"
 	@echo "$(M) tests         - Run tests"
 	@echo "$(M) coverage      - Run coverage tests"
 	@echo "$(M) lint          - Run flake8 for linting"
+
+.PHONY: setup
+setup:
+	@$(info $(M) installing package)
+	pip install -e .
+
 
 .PHONY: deps
 deps:

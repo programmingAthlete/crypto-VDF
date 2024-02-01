@@ -129,7 +129,7 @@ def cmd_complexity_plots(
 
 @app.command(name="plots-2")
 def cmd_complexity_plots_2(
-        security_param: Annotated[int, typer.Option(help="Security parameter")] = 128,
+        security_parameter: Annotated[int, typer.Option(help="Security parameter")] = 128,
         max_delay_exp: Annotated[int, typer.Option(help="Maximum exponent of delay")] = 20,
         iterations: Annotated[int, typer.Option(help="Number of iterations")] = 10,
         fix_input: Annotated[bool, typer.Option(help="Run with fixed input")] = False,
@@ -142,8 +142,9 @@ def cmd_complexity_plots_2(
     s = t()
     input_type = InputType.RANDOM_INPUT if fix_input is False else InputType.FIX_INPUT
     grapher = PietrzakGrapher(number_of_delays=max_delay_exp, number_ot_iterations=iterations, input_type=input_type,
-                              security_param=security_param)
-    title = f"Pietrzak VDF complexity (mean after {grapher.number_ot_iterations} iterations)"
+                              security_parameter=security_parameter)
+    title = rf"Pietrzak VDF complexity (mean after {grapher.number_ot_iterations} iterations) $\lambda$ = " \
+            rf"{security_parameter}"
     if re_measure is False and not grapher.paths.macrostate_file_name.is_file():
         _log.warning(f"File {grapher.paths.macrostate_file_name} does not exist, will re-take the measurements by"
                      f" re-running the VDF")

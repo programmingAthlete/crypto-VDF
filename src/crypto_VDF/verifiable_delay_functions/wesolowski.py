@@ -2,7 +2,6 @@ import hashlib
 from functools import reduce
 from typing import List
 
-from crypto_VDF.custom_errors.custom_exceptions import CoPrimeException
 from crypto_VDF.data_transfer_objects.dto import RsaSetup, EvalResponse
 from crypto_VDF.utils.logger import set_level, get_logger
 from crypto_VDF.utils.number_theory import NumberTheory
@@ -58,8 +57,10 @@ class WesolowskiVDF(VDF):
     def hash_g(setup: RsaSetup, input_param: int):
         h = int(hashlib.sha3_256(f"residue{input_param}".encode()).hexdigest(), 16)
         out = h % setup.n
-        if out in [1, -1]:
-            raise Exception(f"g cannot be in {[-1, 1]}")
+        while True:
+            if NumberTheory.gcd(a=out, b=setup.n) == 1 and out not in [1, -1]:
+                break
+            out += 1
         return out
 
     @classmethod
@@ -78,7 +79,7 @@ class WesolowskiVDF(VDF):
         y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
         _log.info(f"[EVALUATION] VDF output: {y[0]}")
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
-            raise CoPrimeException(message=f"Output y = {y[0]} id not invertible in Z{setup.n}")
+            _log.warning(f"Output y = {y[0]} id not invertible in Z{setup.n}")
         proof = cls.compute_proof_opt(setup=setup, input_param=input_param, output_param=y[0], output_list=y[1])
         _log.info(f"[EVALUATION] VDF proof: {y[0]}")
         return EvalResponse(output=y[0], proof=proof)
@@ -89,7 +90,7 @@ class WesolowskiVDF(VDF):
         y = square_sequences_v2(steps=setup.delay, a=input_param, n=setup.n)
         _log.info(f"[EVALUATION] VDF output: {y[0]}")
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
-            raise CoPrimeException(message=f"Output y = {y[0]} is not invertible in Z{setup.n}")
+            _log.warning(message=f"Output y = {y[0]} is not invertible in Z{setup.n}")
         proof = cls.compute_proof_naive(setup=setup, input_param=input_param, output_param=y[0], delay=setup.delay)
         _log.info(f"[EVALUATION] VDF proof: {proof}")
         return EvalResponse(output=y[0], proof=proof)
