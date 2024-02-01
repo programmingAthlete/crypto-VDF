@@ -17,6 +17,17 @@ def check_arg_presence(arg: str, args, params, defaults):
 
 
 def set_level(logger: logging.Logger, level: int = logging.DEBUG, hiding_level: int = logging.ERROR):
+    """
+    Set the logger level of the decorating function
+
+    Args:
+        logger: logger to which to set the log
+        level: logging level to set
+        hiding_level: logging level to hide all logs except errors
+
+    Returns:
+
+    """
     def deco(func):
         def wrapper(*args, **kwargs):
             params = inspect.signature(func).parameters
