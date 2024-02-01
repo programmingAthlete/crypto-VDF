@@ -17,16 +17,12 @@ class PietrzakVDF(VDF):
         return PublicParams(modulus=primes.q.base_10 * primes.p.base_10, delay=delay, security_param=security_param)
 
     @classmethod
-    def gen(cls, public_params):
+    def gen(cls, public_params) -> int:
         return NumberTheory.generate_quadratic_residue(public_params.modulus)
 
     @classmethod
-    def sol(cls, public_params, input_param):
+    def sol(cls, public_params, input_param) -> int:
         return cls.eval_function(public_params=public_params, input_param=input_param)
-
-    @classmethod
-    def compute_output(cls, public_params, input_param, delay):
-        return square_sequences(steps=delay, a=input_param, n=public_params.modulus)
 
     @classmethod
     def eval(cls, public_params, input_param, _verbose: bool = False, _hide: bool = False) -> EvalResponse:
@@ -49,9 +45,7 @@ class PietrzakVDF(VDF):
         t = public_params.delay
         for item in proof:
             exp = exp_non_modular(a=2, exponent=t)
-            # h_in = concat_hexs(x_i, exp, y_i)
             _log.debug(f"[VERIFY] x_i = {x_i}, y_i:{y_i}")
-            # r_i = hash_function(x=h_in, y=item)
             r_i = cls.flat_shamir_hash(xi=x_i, exponent=exp, yi=y_i, mui=item, public_params=public_params)
             _log.debug(f"[VERIFY] r_i = {r_i}")
             x_i = NumberTheory.multiply(u=exp_modular(a=x_i, exponent=r_i, n=public_params.modulus), v=item,
@@ -65,11 +59,11 @@ class PietrzakVDF(VDF):
                                                public_params.modulus)
 
     @staticmethod
-    def calc_next_step(step: int):
+    def calc_next_step(step: int) -> int:
         return step // 2 if step % 2 == 0 else (step + 1) // 2
 
     @staticmethod
-    def flat_shamir_hash(public_params: PublicParams, xi, exponent, yi, mui):
+    def flat_shamir_hash(public_params: PublicParams, xi, exponent, yi, mui) -> int:
         h_in = concat_hexs(int(xi), exponent, int(yi))
         hash_input = bytes.fromhex(get_hex(h_in)) + bytes.fromhex(get_hex(mui))
         return hash_function(hash_input=hash_input, truncate_to=public_params.security_param)
@@ -96,9 +90,6 @@ class PietrzakVDF(VDF):
             else:
                 t_previous = t
                 # Update t
-                # t_previous = public_params.delay // (2 ** (i - 1)) if t % 2 == 0 else (public_params.delay + 1) // (
-                #       2 ** (i - 1))
-                # t = public_params.delay // (2 ** i) if t % 2 == 0 else (public_params.delay + 1) // (2 ** i)
                 t = cls.calc_next_step(step=t)
                 # Calculate mi, hash and ri
                 mu_i = square_sequences(a=x_i, steps=t, n=public_params.modulus)
@@ -106,10 +97,7 @@ class PietrzakVDF(VDF):
             _log.debug(
                 f"[COMPUTE-PROOF] x_i = {x_i}, y_i={y_i}, t = {t}, t_previous = {t_previous}")
 
-            # mu_i = exp_modular(a=x_i, n=public_params.modulus, exponent=exp)
             assert NumberTheory.check_quadratic_residue(modulus=public_params.modulus, x=mu_i)
-            # h_in = concat_hexs(int(x_i), exp_previous, int(y_i))
-            # _log.debug(f"[COMPUTE-PROOF] mu_i = {mu_i}, x_1: {x_i}, exp_previous: {exp_previous}, y_i:{y_i}")
 
             r_i = cls.flat_shamir_hash(xi=int(x_i), mui=int(mu_i), exponent=exp_previous, yi=y_i,
                                        public_params=public_params)

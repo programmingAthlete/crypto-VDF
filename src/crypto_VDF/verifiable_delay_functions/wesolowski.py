@@ -1,6 +1,6 @@
 import hashlib
 from functools import reduce
-from typing import List
+from typing import List, Union
 
 from crypto_VDF.data_transfer_objects.dto import RsaSetup, EvalResponse
 from crypto_VDF.utils.logger import set_level, get_logger
@@ -17,6 +17,17 @@ class WesolowskiVDF(VDF):
 
     @staticmethod
     def alg_4_original(delay, prime_l, input_var, n):
+        """
+        Original algorithm to calculate g^{\lfloor 2^t/l \rfloor} -> Onlu used to test
+
+        Args:
+            delay:
+            prime_l:
+            input_var:
+            n:
+        Returns:
+
+        """
         rs = []
         x = 1
         r = 1
@@ -64,7 +75,15 @@ class WesolowskiVDF(VDF):
         return out
 
     @classmethod
-    def gen(cls, setup: RsaSetup):
+    def gen(cls, setup: RsaSetup) -> int:
+        """
+        Generate a random value in Z_N^* using H_G
+
+        Args:
+            setup:
+        Returns:
+            random value in Z_N^*
+        """
         numb = random.randint(2, setup.n)
         while True:
             try:
@@ -99,19 +118,55 @@ class WesolowskiVDF(VDF):
     @set_level(logger=_log)
     def compute_proof_naive(cls, setup: RsaSetup, input_param: int, delay: int, output_param: int,
                             _verbose: bool = False) -> int:
+        """
+        Compute proof doing modular exponentiation - Only used to test
+
+        Args:
+            setup:
+            input_param:
+            delay:
+            output_param:
+            _verbose:
+
+        Returns:
+
+        """
         prime_l = cls.flat_shamir_hash(security_param=setup.security_param, g=input_param, y=output_param)
         _log.debug(f"[COMPUTE-PROOF] Generated prime l from flat_shamir_hash: {prime_l}")
         exp = exp_non_modular(a=2, exponent=delay)
         return exp_modular(a=input_param, exponent=(exp // prime_l), n=setup.n)
 
     @staticmethod
-    def get_component(idx: int, select_from: List[int], prime_l: int, delay):
+    def get_component(idx: int, select_from: List[int], prime_l: int, delay) -> Union[int, None]:
+        """
+        Get the pre-calculated g^{delay - 1 - idx}
+
+        Args:
+            idx:
+            select_from:
+            prime_l:
+            delay:
+        Returns:
+            g^{delay - 1 - idx} if b_idx == 1 else else None 
+        """
         b = (2 * exp_modular(a=2, exponent=idx, n=prime_l)) // prime_l
         if b == 1:
             return select_from[delay - idx - 1]
 
     @classmethod
-    def alg_4_revisited_comprehension(cls, n: int, prime_l: int, delay: int, output_list):
+    def alg_4_revisited_comprehension(cls, n: int, prime_l: int, delay: int, output_list: List[int]) -> int:
+        """
+        Out solution to calculate g^{\lfloor 2^t/l \rfloor}, but implementesd with the comprehension to calculate the
+         list of bs
+
+        Args:
+            n: modulus
+            prime_l: prime number l
+            delay: VDF delay
+            output_list: pre-calculated g^{2^i}s
+        Returns:
+            g^{\lfloor 2^t/l \rfloor}
+        """
         _log.info("Starting Alg 4")
         proof_l = list(filter(lambda v: v is not None,
                               (cls.get_component(idx=i, select_from=output_list, prime_l=prime_l, delay=delay) for i in
@@ -122,7 +177,18 @@ class WesolowskiVDF(VDF):
         return proof
 
     @classmethod
-    def alg_4_revisited(cls, n: int, prime_l: int, delay: int, output_list):
+    def alg_4_revisited(cls, n: int, prime_l: int, delay: int, output_list) -> int:
+        """
+        Out solution to calculate g^{\lfloor 2^t/l \rfloor}
+
+        Args:
+            n: modulus
+            prime_l: prime number l
+            delay: VDF delay
+            output_list: pre-calculated g^{2^i}s
+        Returns:
+            g^{\lfloor 2^t/l \rfloor}
+        """
         _log.info("Starting Alg 4 revisited")
         r = 1
         proof_l = [1]
@@ -164,7 +230,17 @@ class WesolowskiVDF(VDF):
             return False
 
     @staticmethod
-    def flat_shamir_hash(security_param: int, g: int, y: int):
+    def flat_shamir_hash(security_param: int, g: int, y: int) -> int:
+        """
+        H_l function
+
+        Args:
+            security_param: security parameter lambda
+            g: value in Z_N^*
+            y: value in Z_N^*
+        Returns:
+            H_g(bin(g)||bin(y))
+        """
         params = f"{bin(g)[2:]}*{bin(y)[2:]}".encode()
         h = hash_function(hash_input=params, truncate_to=2 * security_param)
         if isprime(h) is True:
