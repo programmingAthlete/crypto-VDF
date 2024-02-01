@@ -1,5 +1,4 @@
 # crypto-VDF
-The source code is organised in a package, inside the 'src' folder.
 
 ## Advice
 Use a virtual python env to avoid installing libraries to your main python version.
