@@ -3,6 +3,7 @@ from typing import Annotated
 import typer
 from orjson import orjson
 
+from crypto_VDF.data_transfer_objects.dto import RsaSetup
 from crypto_VDF.data_transfer_objects.plotter import InputType, VDFName
 from crypto_VDF.plotter.wesolowski_grapher import WesolowskiGrapher
 from crypto_VDF.utils.logger import get_logger
@@ -77,6 +78,31 @@ def cmd_check_alg(delay: Annotated[int, typer.Option(help="Delay of the VDF")] =
     out = square_sequences_v2(a=g, steps=pp.delay, n=pp.n)
     r = WesolowskiVDF.alg_4_revisited(n=pp.n, prime_l=prime_l, delay=pp.delay, output_list=out[1])
     assert r == alg_4[0]
+
+
+@app.command(name='verify')
+def cmd_verif(
+        x: Annotated[int, typer.Option(help="Input of eval function")],
+        y: Annotated[int, typer.Option(help="Output of eval function")],
+        delay: Annotated[int, typer.Option(help="VDF delay")],
+        modulus: Annotated[int, typer.Option(help="VDF modulus")],
+        proof: Annotated[int, typer.Option(help="Proof outputted by eval")],
+        security_parameter: Annotated[int, typer.Option(help="Security Parameter")] = 128,
+        verbose: Annotated[bool, typer.Option(help="Show debug logs")] = False
+):
+    pp = RsaSetup(n=modulus, delay=delay, security_param=security_parameter)
+    out = WesolowskiVDF.verify(setup=pp, input_param=x, output_param=y, proof=proof, _verbose=verbose)
+    print(out)
+
+
+@app.command(name="eval")
+def cmd_eval(security_parameter: int = 8, delay: int = 8):
+    pp = WesolowskiVDF.setup(security_param=security_parameter, delay=delay)
+    x = WesolowskiVDF.gen(pp)
+    print('input x:', x)
+    y = WesolowskiVDF.eval(setup=pp, input_param=x)
+    print("Modulus:", pp.n)
+    print("Output of Eval:", y)
 
 
 @app.command(name="plots")

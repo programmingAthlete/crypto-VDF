@@ -48,10 +48,11 @@ def cmd_proof(
 
 
 @app.command(name='verify')
-def cmd_verif(x: int = 16384, y: int = 6, delay: int = 1, modulus: int = 21, log: bool = False):
+def cmd_verif(x: int = 16384, y: int = 6, delay: int = 1, modulus: int = 21, proof: str = "16", log: bool = False):
+    proof = [int(item) for item in proof.split(',')]
     pp = PublicParams(modulus=modulus, delay=delay)
-    proof = [16]
-    out = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=y, proof=proof, log=log)
+    # proof = [16]
+    out = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=y, proof=proof, _verbose=log)
     print(out)
 
 
@@ -60,6 +61,7 @@ def cmd_eval(security_parameter: int = 8, delay: int = 8):
     pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
     x = PietrzakVDF.gen(pp)
     y = PietrzakVDF.eval(public_params=pp, input_param=x)
+    print("Modulus:", pp.modulus)
     print("Output of Eval:", y)
 
 

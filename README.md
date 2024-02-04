@@ -109,3 +109,34 @@ Delay of 2^(20)
 
 <code>cryptoVDF pietrzak plots --max-delay-exp 10 --iterations 10 --security-parameter 128 --show --verbose</code>
 
+
+# Demo
+
+## Full-VDF
+
+### Completemess
+<code>cryptoVDF pietrzak full-vdf --delay 1048576 --security-parameter 128</code>
+
+<code>cryptoVDF wesolowski full-vdf --delay 1048576 --security-parameter 128</code>
+
+<code>cryptoVDF wesolowski full-vdf --delay 1048576 --security-parameter 128 --trapdoor</code>
+
+### Soundness
+### VDF1
+
+<code>cryptoVDF pietrzak eval --security-parameter 128 --delay 4</code>
+
+<code>cryptoVDF pietrzak verify --x !input! --y !output! --proof !proof! --modulus !modulus! --security-parameter !security-parameter!</code>
+
+#### VDF2
+<code>cryptoVDF wesolowski eval --security-parameter 128 --delay 4</code>
+
+<code>cryptoVDF wesolowski verify --x !input! --y !output! --proof !proof! --delay !delay! --modulus !modulus!</code>
+
+
+
+## Plots
+<code>cryptoVDF pietrzak plots --max-delay-exp 10 --iterations 200 --security-parameter 4 --show</code>
+
+<code>cryptoVDF wesolowski plots --max-delay-exp 10 --iterations 200 --security-parameter 4 --show</code>
+
