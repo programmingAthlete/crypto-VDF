@@ -31,7 +31,6 @@ class PietrzakGrapher(Grapher):
 
     @staticmethod
     def run_vdf(pp: PublicParams, input_pram: int):
-        print()
         _log.debug(f"[RUN-VDF] Delay {pp.delay}")
         _log.debug(f"[RUN-VDF] Starting the evaluation function with x = {input_pram}")
         t_out_start = t()
