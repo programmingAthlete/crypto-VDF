@@ -133,6 +133,10 @@ Delay of 2^(20)
 
 <code>cryptoVDF wesolowski verify --x input --y output --proof proof --delay delay --modulus modulus</code>
 
+Example: Teh following will return True
+<code>cryptoVDF wesolowski verify --x 95974600194182310684653862122690543205 --y 856966856996350542601758883331119 --proof 95974600194182310684653862122690543205 --delay 4 --modulus 100167473050021300389050029515619897043<code>
+
+
 
 
 ## Plots

@@ -100,7 +100,7 @@ class WesolowskiVDF(VDF):
         if not NumberTheory.gcd(a=y[0], b=setup.n) == 1:
             _log.warning(f"Output y = {y[0]} id not invertible in Z{setup.n}")
         proof = cls.compute_proof_opt(setup=setup, input_param=input_param, output_param=y[0], output_list=y[1])
-        _log.info(f"[EVALUATION] VDF proof: {y[0]}")
+        _log.info(f"[EVALUATION] VDF proof: {proof}")
         return EvalResponse(output=y[0], proof=proof)
 
     @classmethod
