@@ -114,7 +114,7 @@ Delay of 2^(20)
 
 ## Full-VDF
 
-### Completemess
+### Completeness
 <code>cryptoVDF pietrzak full-vdf --delay 1048576 --security-parameter 128</code>
 
 <code>cryptoVDF wesolowski full-vdf --delay 1048576 --security-parameter 128</code>
@@ -128,12 +128,17 @@ Delay of 2^(20)
 
 <code>cryptoVDF pietrzak verify --x input --y output --proof proof --modulus modulus --security-parameter security-parameter</code>
 
+Example: The following should evaluate to True
+
+<code>cryptoVDF pietrzak verify --x 60165111687309026253618363786070190189 --y 38920676524930194932948449234450122897 --proof 26733557083776090708288610604071675446,54679161191322144951368137116431681903 --modulus 202791651255554990394641179601075112913 --security-parameter 128</code>
+
 #### VDF2
 <code>cryptoVDF wesolowski eval --security-parameter 128 --delay 4</code>
 
 <code>cryptoVDF wesolowski verify --x input --y output --proof proof --delay delay --modulus modulus</code>
 
-Example: Teh following will return True
+Example: The following will return True
+
 <code>cryptoVDF wesolowski verify --x 95974600194182310684653862122690543205 --y 856966856996350542601758883331119 --proof 95974600194182310684653862122690543205 --delay 4 --modulus 100167473050021300389050029515619897043<code>
 
 
