@@ -48,16 +48,25 @@ def cmd_proof(
 
 
 @app.command(name='verify')
-def cmd_verif(x: int = 16384, y: int = 6, delay: int = 1, modulus: int = 21, proof: str = "16", log: bool = False):
+def cmd_verif(
+        x: Annotated[int, typer.Option(help="Input of eval function")],
+        y: Annotated[int, typer.Option(help="Output of eval function")],
+        modulus: Annotated[int, typer.Option(help="VDF modulus")],
+        proof: Annotated[str, typer.Option(help="Proof outputted by eval")],
+        delay: Annotated[int, typer.Option(help="VDF delay")] = 4,
+        security_parameter: Annotated[int, typer.Option(help="Security Parameter")] = 128,
+        verbose: Annotated[bool, typer.Option(help="Show debug logs")] = False):
     proof = [int(item) for item in proof.split(',')]
-    pp = PublicParams(modulus=modulus, delay=delay)
-    # proof = [16]
-    out = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=y, proof=proof, _verbose=log)
+    pp = PublicParams(modulus=modulus, delay=delay, security_param=security_parameter)
+    out = PietrzakVDF.verify(public_params=pp, input_param=x, output_param=y, proof=proof, _verbose=verbose)
     print(out)
 
 
 @app.command(name="eval")
-def cmd_eval(security_parameter: int = 8, delay: int = 8):
+def cmd_eval(
+        security_parameter: Annotated[int, typer.Option(help="security_parameter")] = 128,
+        delay: Annotated[int, typer.Option(help="Delay of the VDF")] = 4
+):
     pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
     x = PietrzakVDF.gen(pp)
     y = PietrzakVDF.eval(public_params=pp, input_param=x)
@@ -66,13 +75,13 @@ def cmd_eval(security_parameter: int = 8, delay: int = 8):
 
 
 @app.command(name="setup")
-def cmd_setup(security_parameter: int = 100, delay: int = 2**10):
+def cmd_setup(security_parameter: int = 100, delay: int = 2 ** 10):
     pp = PietrzakVDF.setup(security_param=security_parameter, delay=delay)
     print(f"{orjson.loads(pp.json())}")
 
 
 @app.command(name="gen")
-def cmd_gen(delay: int = 2**10, modulus: int = 21):
+def cmd_gen(delay: int = 2 ** 10, modulus: int = 21):
     pp = PublicParams(delay=delay, modulus=modulus)
     x = PietrzakVDF.gen(pp)
     print(f"Generated quadratic residue: {x}")
