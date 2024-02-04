@@ -131,7 +131,7 @@ Delay of 2^(20)
 #### VDF2
 <code>cryptoVDF wesolowski eval --security-parameter 128 --delay 4</code>
 
-<code>cryptoVDF wesolowski verify --x !input! --y output --proof proof --delay delay --modulus modulus</code>
+<code>cryptoVDF wesolowski verify --x input --y output --proof proof --delay delay --modulus modulus</code>
 
 
 
