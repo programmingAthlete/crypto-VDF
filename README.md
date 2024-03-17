@@ -10,6 +10,7 @@ In the case Wesoloski's VDF, our disign and implementation of the optimization o
 ## Organisation of the repo
 ### Organisation of the package
 <ul>
+<li>report/VDF-Luca_Boghos_Mathias.pdf - project report</li>
 <li>clis - directory to handle the Typer CLI</li>
 <li>custom_error - directory containing custom exception classes to facilitate the error handling</li>
 <li>data_transfer_objects - directory containing 'contracts' between functions (input and output pydantic models)</li>
