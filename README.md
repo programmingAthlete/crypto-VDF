@@ -1,7 +1,11 @@
 # crypto-VDF
-
-## Advice
-Use a virtual python env to avoid installing libraries to your main python version.
+Implementation of two time-lock based-Verifiable Delay Functions.
+The two VDFs are
+<ul>
+  <li>Pietrzark's VDF: https://eprint.iacr.org/2018/627.pdf</li>
+  <li>Wesoloski's VDF: https://eprint.iacr.org/2018/623</li>
+</ul>
+In the case Wesoloski's VDF, our disign implementation of the optimization of the proof, slightly diverged from the original one. Our solution is more efficient compared to the paper's one when restricting to binary values b_is (binar repreentation of the proof - kappa = 1), but it is not more efficinet in general.
 
 ## Organisation of the repo
 ### Organisation of the package
@@ -59,19 +63,6 @@ Without CLI, the source code can be run in a classic manner
 To run the unit tests, run 
 
 <code>make tests</code>
-
-## Rules
-<ul>
-<li>
-Merging to the master branch should be done only by PR unless proper justification or it the changes to not impact critical structure (for example CLI changes which have nothing to do with the crypto part)
-</li>
-<li>
-When merging to master the feature branch should be up-to-date - best thing to do would be to rebase the feature branch into master: <b>in the feature branch</b> do
-<code>git rebase develop</code>, then <code>git push -f</code>
-</li>
-<li>A feature branch should be merged only if its unit tests pass</li>
-<li>The merge to master branch should be done from the GitHub UI using the <b>squash and merge</b> option if the branch contains more than one commit</li>
-</ul>
 
 ## Examples
 
