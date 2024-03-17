@@ -5,7 +5,7 @@ The two VDFs are
   <li>Pietrzark's VDF: https://eprint.iacr.org/2018/627.pdf</li>
   <li>Wesoloski's VDF: https://eprint.iacr.org/2018/623</li>
 </ul>
-In the case Wesoloski's VDF, our disign implementation of the optimization of the proof, slightly diverged from the original one. Our solution is more efficient compared to the paper's one when restricting to binary values b_is (binar repreentation of the proof - kappa = 1), but it is not more efficinet in general.
+In the case Wesoloski's VDF, our disign and implementation of the optimization of the proof, slightly diverged from the original one. Our solution is more efficient compared to the paper's one when restricting to binary values b_is (binar repreentation of the proof - kappa = 1), but it is not more efficinet in general.
 
 ## Organisation of the repo
 ### Organisation of the package
